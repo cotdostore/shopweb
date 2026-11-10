@@ -7,7 +7,7 @@ import {tmpdir} from 'node:os';
 import path from 'node:path';
 import vm from 'node:vm';
 import {fileURLToPath,pathToFileURL} from 'node:url';
-import {grantExpiry} from '../portal/duration.mjs';
+import {grantExpiry} from '../../portal-assets/duration.mjs';
 import {parseCredentials,fromGoogleDocument} from '../portal/parser.mjs';
 import {seal,unseal,digest,base64} from '../portal/crypto.mjs';
 globalThis.crypto=webcrypto;
@@ -172,8 +172,8 @@ test('bootstrap admin link is one use, cannot be used cross-origin or after expi
  }finally{dispose();}
 });
 test('Apps Script reads Docs with readonly service, preserves hyperlink and installs timer only after success',()=>{
- const code=readFileSync(path.join(root,'portal/apps-script/Code.gs'),'utf8');
- const manifest=JSON.parse(readFileSync(path.join(root,'portal/apps-script/appsscript.json'),'utf8'));
+ const code=readFileSync(path.join(root,'../portal-assets/Code.gs'),'utf8');
+ const manifest=JSON.parse(readFileSync(path.join(root,'../portal-assets/appsscript.json'),'utf8'));
  assert(manifest.oauthScopes.includes('https://www.googleapis.com/auth/documents.readonly'));
  assert(!manifest.oauthScopes.includes('https://www.googleapis.com/auth/documents'));
  assert.equal(manifest.dependencies.enabledAdvancedServices[0].userSymbol,'Docs');

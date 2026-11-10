@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
-import {grantExpiry} from '../portal/duration.mjs';
+import {grantExpiry} from '../../portal-assets/duration.mjs';
 test('admin delete button requires confirmation, sends the internal customer ID and reloads the list',async()=>{
  class Element{
   constructor(){this.children=[];this.listeners={};this.value='';this.classList={toggle(){}};}
@@ -25,7 +25,7 @@ test('admin delete button requires confirmation, sends the internal customer ID 
   if(url===api+'/admin/sync-token')return Response.json({token:'synthetic-sync-token',endpoint:api+'/sync'});
   assert.equal(url,api+'/admin/state');return Response.json(state);
  }};
- vm.createContext(context);const code=readFileSync(new URL('../portal/web/admin.js',import.meta.url),'utf8').replace(/^import[^\n]+\n/,'');vm.runInContext(code,context);assert.equal(requests.length,0,'logged-out page makes no API calls');
+ vm.createContext(context);const code=readFileSync(new URL('../../admin/admin.js',import.meta.url),'utf8').replace(/^import[^\n]+\n/,'');vm.runInContext(code,context);assert.equal(requests.length,0,'logged-out page makes no API calls');
  get('github-token').value='synthetic-login-token';get('admin-login').listeners.submit({preventDefault(){},submitter:new Element()});await new Promise(resolve=>setImmediate(resolve));
  function find(node){if(node.textContent==='Xóa ID')return node;for(const child of node.children){const result=find(child);if(result)return result;}}
  const button=find(get('customers'));assert(button);

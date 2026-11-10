@@ -64,7 +64,7 @@ node --test cloudflare/tests/admin.test.mjs cloudflare/tests/bot.test.mjs cloudf
 node cloudflare/preview.mjs
 ```
 
-Build xuất `chatgpt/`, `admin/` và thư mục `portal-assets/` dùng chung CSS, duration và file tải xuống cho Apps Script. Source giao diện chỉ sửa tại `portal/web/`, sau đó chạy build để cập nhật các file GitHub Pages. `_config.yml` loại source backend/giao diện gốc khỏi tài sản Pages; module giá dùng chung vẫn được xuất. Worker chỉ đóng gói 7 module backend trong `dist/modules.json` (được ignore), không chứa HTML/CSS/JS giao diện. `preview.mjs` chỉ kiểm tra bố cục; xác thực thực tế chạy trên GitHub Pages và Worker.
+Sửa trực tiếp giao diện tại `admin/` và `chatgpt/`. `portal-assets/` là bản duy nhất của CSS chung, duration và file Apps Script tải xuống. Không còn bản sao giao diện hay Apps Script trong `cloudflare/portal/`. `build.mjs` chỉ đóng gói 7 module backend vào `dist/modules.json` (được ignore); không tạo hoặc ghi đè bất kỳ file giao diện nào. Module duration của Worker được lấy từ cùng file `portal-assets/duration.mjs` mà trang admin sử dụng. `_config.yml` loại backend khỏi tài sản Pages; module giá dùng chung vẫn được xuất. `preview.mjs` chỉ kiểm tra bố cục; xác thực thực tế chạy trên GitHub Pages và Worker.
 
 Worker giữ API, webhook Messenger và đồng bộ Docs. `/portal/admin` cũ chỉ chuyển sang trang admin GitHub; không chứa giao diện riêng. Các URL `/chatgpt`, `/chatgpt/access` và `/portal/assets/*` cũ trả 404. CSS không còn được sao chép riêng cho trang khách. Trang admin chưa đăng nhập không gọi API; đăng nhập vẫn xác minh quyền admin repo tại GitHub.
 

@@ -1,6 +1,6 @@
 import {digest,accessHash,seal,unseal,randomToken} from './crypto.mjs';
 import {normalizeId,parseCredentials,safeUrl} from './parser.mjs';
-import {grantExpiry} from './duration.mjs';
+import {grantExpiry} from '../../portal-assets/duration.mjs';
 
 const API='/portal/api', HOUR=3600000;
 const GITHUB_ORIGIN='https://cotdostore.github.io';

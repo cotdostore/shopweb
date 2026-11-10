@@ -1,4 +1,4 @@
-# Publish generated pages and shared browser modules, not backend source copies.
+# Publish canonical frontend files and shared browser modules, not backend tooling.
 exclude:
   - cloudflare/bot
   - cloudflare/portal

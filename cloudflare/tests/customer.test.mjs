@@ -19,7 +19,7 @@ test('customer polling uses one request, keeps unchanged cards, masks updates an
  const document={hidden:false,readyState:'complete',getElementById:get,querySelector:()=>({content:'https://api.example/portal/api'}),createElement:()=>new Element(),createDocumentFragment:()=>Object.assign(new Element(),{fragment:true}),addEventListener:(name,fn)=>events[name]=fn};
  const location={href:'https://cotdostore.github.io/shopweb/chatgpt/',pathname:'/shopweb/chatgpt/',hash:''};
  const context={document,location,URL,Intl,AbortController,console,window:{addEventListener:(name,fn)=>events[name]=fn},history:{replaceState:(_a,_b,url)=>{const parsed=new URL(url,location.href);location.pathname=parsed.pathname;location.hash=parsed.hash;}},setTimeout:(fn,delay)=>{const id=++nextTimer;timers.set(id,{fn,delay});return id;},clearTimeout:id=>timers.delete(id),fetch:(url,options)=>new Promise(resolve=>requests.push({url,options,resolve})),navigator:{}};
- vm.createContext(context);vm.runInContext(readFileSync(new URL('../portal/web/customer.js',import.meta.url),'utf8'),context);
+ vm.createContext(context);vm.runInContext(readFileSync(new URL('../../chatgpt/customer.js',import.meta.url),'utf8'),context);
  const flush=()=>new Promise(resolve=>setImmediate(resolve));
  async function respond(index,data,status=200){requests[index].resolve(Response.json(data,{status}));await flush();}
  assert.equal(requests.length,1);await respond(0,{error:'login'},401);
