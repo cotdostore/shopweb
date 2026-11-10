@@ -6,7 +6,7 @@ A simple website created for educational and research purposes.
 
 View the website here:
 
-https://cotdostore.github.io/shopweb-test1.1/bang-gia.html
+https://cotdostore.github.io/shopweb/bang-gia.html
 
 ## 📌 About
 
