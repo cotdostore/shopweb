@@ -5,5 +5,5 @@
  "compatibility_date":"2026-10-08",
  "database":{"binding":"PORTAL_DB","id":"14532a61-5c26-463c-98d2-9fb8d8c80037","name":"cotdo-service-access"},
  "secret_names":["PAGE_ACCESS_TOKEN","VERIFY_TOKEN","PORTAL_KEY"],
- "public_url":"https://cotdostore.github.io/shopweb-test1.1/chatgpt/"
+ "public_url":"https://cotdostore.github.io/shopweb/chatgpt/"
 }

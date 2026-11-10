@@ -16,7 +16,7 @@ test('Worker serves admin tools and APIs but no duplicate customer website',asyn
 test('catalog burst shares one fetch, expires after 30 seconds, and does not serve stale data on failure',async()=>{
  const bot=await loadBot();const oldFetch=globalThis.fetch,oldNow=Date.now;let time=100000,calls=0,fail=false;
  Date.now=()=>time;
- globalThis.fetch=async()=>{calls++;await new Promise(resolve=>setImmediate(resolve));if(fail)throw new Error('upstream down');return Response.json(prices);};
+ globalThis.fetch=async url=>{assert.match(url,/^https:\/\/raw\.githubusercontent\.com\/cotdostore\/shopweb\/main\/prices\.json\?/);calls++;await new Promise(resolve=>setImmediate(resolve));if(fail)throw new Error('upstream down');return Response.json(prices);};
  try{
   const burst=await Promise.all(Array.from({length:32},()=>bot.fetchCatalog()));assert.equal(calls,1);assert.equal(burst[0].length,1);
   await bot.fetchCatalog();assert.equal(calls,1);
@@ -35,6 +35,19 @@ test('linear best-match selection preserves ties and input order',async()=>{
   const top=sorted.filter(x=>x.score===sorted[0]?.score).map(x=>x.item);
   assert.deepEqual(chooseCandidates(input),!top.length?{status:'not_found'}:top.length===1?{status:'found',item:top[0]}:{status:'ambiguous',options:top});assert.deepEqual(input,original);
  }
+});
+test('price manager API reads the new shopweb repository with the request token',async()=>{
+ const bot=await loadBot(),oldFetch=globalThis.fetch;
+ try{
+  const token='synthetic_github_token_for_test';
+  globalThis.fetch=async(url,options)=>{
+   assert.equal(url,'https://api.github.com/repos/cotdostore/shopweb/contents/prices.json?ref=main');
+   assert.equal(options.headers.Authorization,'Bearer '+token);
+   return Response.json({encoding:'base64',content:Buffer.from(JSON.stringify(prices)).toString('base64'),sha:'synthetic-sha'});
+  };
+  const response=await bot.default.fetch(new Request('https://portal.example/price-admin/api',{headers:{Origin:'https://cotdostore.github.io',Authorization:'Bearer '+token}}),{},{});
+  assert.equal(response.status,200);assert.deepEqual((await response.json()).data,prices);
+ }finally{globalThis.fetch=oldFetch;}
 });
 test('webhook queues independent customers concurrently with a bound and preserves each customer order',async()=>{
  const {processWebhook}=await loadBot();let active=0,peak=0;const order=new Map();

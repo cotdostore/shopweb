@@ -5,7 +5,7 @@ import {grantExpiry} from './duration.mjs';
 
 const API='/portal/api', HOUR=3600000;
 const GITHUB_ORIGIN='https://cotdostore.github.io';
-const CUSTOMER_URL=GITHUB_ORIGIN+'/shopweb-test1.1/chatgpt/';
+const CUSTOMER_URL=GITHUB_ORIGIN+'/shopweb/chatgpt/';
 const customerCookie='__Host-cotdo_customer', adminCookie='__Host-cotdo_admin';
 const headers={
  'Cache-Control':'no-store, private', 'X-Content-Type-Options':'nosniff',
@@ -60,10 +60,10 @@ async function adminLogin(request,env) {
  const data=await body(request,2000),token=data.token;
  if(typeof token!=='string'||!/^\S{20,255}$/.test(token))throw new Problem('Nhập token GitHub của chủ repo.',401);
  const githubHeaders={Authorization:'Bearer '+token,Accept:'application/vnd.github+json','User-Agent':'CotDo-Portal'};
- const response=await fetch('https://api.github.com/repos/cotdostore/shopweb-test1.1',{headers:githubHeaders,signal:AbortSignal.timeout(10000)});
+ const response=await fetch('https://api.github.com/repos/cotdostore/shopweb',{headers:githubHeaders,signal:AbortSignal.timeout(10000)});
  if(!response.ok)throw new Problem('GitHub từ chối token hoặc token chưa có quyền đọc repo.',403);
  const repo=await body(response,50000);
- if(!repo.permissions?.admin)throw new Problem('Cần token có quyền quản trị repo cotdostore/shopweb-test1.1.',403);
+ if(!repo.permissions?.admin)throw new Problem('Cần token có quyền quản trị repo cotdostore/shopweb.',403);
  return reply({ok:true},200,{'Set-Cookie':await newSession(env,'admin')});
 }
 export async function createCustomer(env,rawId,displayName='',messengerId=null) {

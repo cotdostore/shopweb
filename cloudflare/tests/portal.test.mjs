@@ -92,7 +92,7 @@ test('CSRF, brute force, customer/admin separation and admin owner authenticatio
   assert.equal((await call(env,'/login','POST',{accessId:'unknown123'},undefined,'abusive')).status,429);
   const user=await createCustomer(env,'linhhuynh01');const login=await call(env,'/login','POST',{accessId:'linhhuynh01'});assert.equal((await call(env,'/admin/state','GET',undefined,login.cookie)).status,401);
   globalThis.fetch=async()=>Response.json({permissions:{push:true,admin:false}});assert.equal((await call(env,'/admin/login','POST',{token:'synthetic-github-token-only'})).status,403);
-  globalThis.fetch=async()=>Response.json({permissions:{admin:true}});const admin=await call(env,'/admin/login','POST',{token:'synthetic-github-token-only'});assert.equal(admin.status,200);
+  globalThis.fetch=async url=>{assert.equal(url,'https://api.github.com/repos/cotdostore/shopweb');return Response.json({permissions:{admin:true}});};const admin=await call(env,'/admin/login','POST',{token:'synthetic-github-token-only'});assert.equal(admin.status,200);
   const state=await call(env,'/admin/state','GET',undefined,admin.cookie);assert.equal(state.data.customers[0].accessId,'linhhuynh01');
   await call(env,'/admin/customer','PUT',{id:user.id,active:false},admin.cookie);assert.equal((await call(env,'/me','GET',undefined,login.cookie)).status,401);
  }finally{globalThis.fetch=oldFetch;dispose();}
@@ -113,7 +113,7 @@ test('bot Page echo commands require verification and customer text cannot invok
   globalThis.fetch=async()=>Response.json({error:'not a real page message'},{status:404});await bot.handlePageAdminCommand(event('/id linhhuynh01'),page,env);
   assert.equal((await env.PORTAL_DB.prepare('SELECT * FROM portal_customers').all()).results.length,0);
   globalThis.fetch=async(url,options)=>{if(options?.method==='POST'){sent.push(JSON.parse(options.body));return Response.json({message_id:'synthetic-outbound'});}return Response.json({from:{id:page},to:{data:[{id:recipient}]},message:'/id linhhuynh01',created_time:new Date().toISOString()});};
-  await bot.handlePageAdminCommand(event('/id linhhuynh01'),page,env);assert.equal(sent.length,1);assert.match(sent[0].message.text,/Đã tạo ID/);
+  await bot.handlePageAdminCommand(event('/id linhhuynh01'),page,env);assert.equal(sent.length,1);assert.match(sent[0].message.text,/Đã tạo ID/);assert(sent[0].message.text.includes('https://cotdostore.github.io/shopweb/chatgpt/'));
   globalThis.fetch=async()=>{throw new Error('duplicate must not call Meta Graph');};
   await bot.handlePageAdminCommand(event('/id linhhuynh01'),page,env);assert.equal(sent.length,1,'duplicate webhook does not resend or reverify via Graph');
   await bot.handleCustomerText(recipient,'/block linhhuynh01','/block linhhuynh01',env);assert.equal(sent.length,1);

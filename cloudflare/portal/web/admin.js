@@ -27,7 +27,7 @@ function render(){
   }if(!list.childNodes.length)list.textContent='Chưa cấp dịch vụ';row.append(list);
   const tools=node('td'),wrap=node('div',null,'table-actions');
   wrap.append(button(user.active?'Khóa':'Mở lại',async()=>{await api('/admin/customer','PUT',{id:user.id,active:!user.active});await load();notice(user.active?'Đã khóa ID và hủy phiên truy cập.':'Đã mở lại ID. Hạn dùng dịch vụ giữ nguyên.');},user.active?'secondary danger':'secondary'));
-  wrap.append(button('Chép tin nhắn',async()=>{await navigator.clipboard.writeText('ID truy cập của bạn: '+user.accessId+'\nhttps://cotdostore.github.io/shopweb-test1.1/chatgpt/\nNhập ID để xem dịch vụ đã được cấp và thông tin mới nhất.');notice('Đã chép tin nhắn để gửi khách.');}));tools.append(wrap);row.append(tools);$('customers').append(row);
+  wrap.append(button('Chép tin nhắn',async()=>{await navigator.clipboard.writeText('ID truy cập của bạn: '+user.accessId+'\nhttps://cotdostore.github.io/shopweb/chatgpt/\nNhập ID để xem dịch vụ đã được cấp và thông tin mới nhất.');notice('Đã chép tin nhắn để gửi khách.');}));tools.append(wrap);row.append(tools);$('customers').append(row);
  }
  $('accounts').replaceChildren();
  for(const account of state.accounts){

@@ -17,7 +17,7 @@ test('customer polling uses one request, keeps unchanged cards, masks updates an
  get('dashboard').hidden=true;get('logout').hidden=true;
  const events={},timers=new Map(),requests=[];let nextTimer=0;
  const document={hidden:false,readyState:'complete',getElementById:get,querySelector:()=>({content:'https://api.example/portal/api'}),createElement:()=>new Element(),createDocumentFragment:()=>Object.assign(new Element(),{fragment:true}),addEventListener:(name,fn)=>events[name]=fn};
- const location={href:'https://cotdostore.github.io/shopweb-test1.1/chatgpt/',pathname:'/shopweb-test1.1/chatgpt/',hash:''};
+ const location={href:'https://cotdostore.github.io/shopweb/chatgpt/',pathname:'/shopweb/chatgpt/',hash:''};
  const context={document,location,URL,Intl,AbortController,console,window:{addEventListener:(name,fn)=>events[name]=fn},history:{replaceState:(_a,_b,url)=>{const parsed=new URL(url,location.href);location.pathname=parsed.pathname;location.hash=parsed.hash;}},setTimeout:(fn,delay)=>{const id=++nextTimer;timers.set(id,{fn,delay});return id;},clearTimeout:id=>timers.delete(id),fetch:(url,options)=>new Promise(resolve=>requests.push({url,options,resolve})),navigator:{}};
  vm.createContext(context);vm.runInContext(readFileSync(new URL('../portal/web/customer.js',import.meta.url),'utf8'),context);
  const flush=()=>new Promise(resolve=>setImmediate(resolve));

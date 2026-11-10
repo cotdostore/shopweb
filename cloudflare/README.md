@@ -2,7 +2,7 @@
 
 Nguồn bot Messenger đang chạy được đưa vào `bot/worker.js`, sau đó mở rộng thêm module `portal/`. Phần bảng giá và các lệnh bot hiện có được giữ nguyên.
 
-- Khách: https://cotdostore.github.io/shopweb-test1.1/chatgpt/
+- Khách: https://cotdostore.github.io/shopweb/chatgpt/
 - Quản trị: https://cotdo-messenger-bot.kazuto121100.workers.dev/portal/admin
 - Trang khách GitHub Pages: `chatgpt/index.html`, `chatgpt/customer.js`, `chatgpt/portal.css`. Đây là trang thật, không chuyển hướng sang Worker.
 
@@ -31,7 +31,7 @@ Trang GitHub Pages dùng phiên bearer chỉ giữ trong bộ nhớ tab, không 
 
 Tài khoản, mật khẩu và URL 2FA được mã hóa AES-GCM bằng secret `PORTAL_KEY` của Worker, không lưu trong mã nguồn hoặc GitHub Pages. `PORTAL_DB` là D1 riêng. Đổi khóa cần di chuyển lại dữ liệu mã hóa; không ghi đè khóa khi triển khai lại.
 
-Trang quản trị xác minh token GitHub có quyền admin repo `cotdostore/shopweb-test1.1`, không lưu token. Phiên admin 2 giờ. Có thể cấp link khởi tạo admin một lần qua hash URL, hết hạn sau 24 giờ; token chỉ lưu dạng hash trong D1. Không gửi link khởi tạo cho khách. Link không được tạo bởi API công khai.
+Trang quản trị xác minh token GitHub có quyền admin repo `cotdostore/shopweb`, không lưu token. Phiên admin 2 giờ. Có thể cấp link khởi tạo admin một lần qua hash URL, hết hạn sau 24 giờ; token chỉ lưu dạng hash trong D1. Không gửi link khởi tạo cho khách. Link không được tạo bởi API công khai.
 
 ## Google Docs → Cloudflare
 

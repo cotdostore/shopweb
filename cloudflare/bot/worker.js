@@ -268,11 +268,11 @@ export class CustomerInbox extends DurableObject {
 }
 
 const PRICE_URL =
-  "https://cotdostore.github.io/shopweb-test1.1/bang-gia.html";
+  "https://cotdostore.github.io/shopweb/bang-gia.html";
 const CATALOG_URL =
-  "https://raw.githubusercontent.com/cotdostore/shopweb-test1.1/main/prices.json";
+  "https://raw.githubusercontent.com/cotdostore/shopweb/main/prices.json";
 const PAYMENT_IMAGE_URL =
-  "https://raw.githubusercontent.com/cotdostore/shopweb-test1.1/main/assets/anh-momo.jpg";
+  "https://raw.githubusercontent.com/cotdostore/shopweb/main/assets/anh-momo.jpg";
 const GRAPH_API =
   "https://graph.facebook.com/v26.0/me/messages";
 const SESSION_TTL = 1800; // 30 minutes
@@ -2440,7 +2440,7 @@ async function isBotEnabled(env) {
   return String(env.BOT_ENABLED ?? "").toLowerCase() === "true";
 }
 const PRICE_ADMIN_ORIGIN = "https://cotdostore.github.io";
-const PRICE_GITHUB_API = "https://api.github.com/repos/cotdostore/shopweb-test1.1/contents/prices.json";
+const PRICE_GITHUB_API = "https://api.github.com/repos/cotdostore/shopweb/contents/prices.json";
 async function readPriceBody(response, max = 150000) {
   if (!response.body) throw new Error("Empty body");
   const reader = response.body.getReader(), chunks = []; let length = 0;
