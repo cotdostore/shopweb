@@ -1,3 +1,7 @@
 # Publish website files; backend code and deployment tooling stay in the repository.
+url: https://cotdostore.github.io
+baseurl: /shopweb
+plugins:
+  - jekyll-redirect-from
 exclude:
   - cloudflare

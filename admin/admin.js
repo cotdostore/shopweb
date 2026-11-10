@@ -33,7 +33,7 @@ function render(){
    if(!confirm('Xóa vĩnh viễn ID "'+user.accessId+'"? Các quyền dịch vụ và phiên đăng nhập của ID này cũng sẽ bị xóa.'))return;
    await api('/admin/customer','DELETE',{id:user.id});await load();notice('Đã xóa ID '+user.accessId+', thu hồi quyền và hủy phiên đăng nhập.');
   },'secondary danger'));
-  wrap.append(button('Chép tin nhắn',async()=>{await navigator.clipboard.writeText('ID truy cập của bạn: '+user.accessId+'\nhttps://cotdostore.github.io/shopweb/chatgpt/\nNhập ID để xem dịch vụ đã được cấp và thông tin mới nhất.');notice('Đã chép tin nhắn để gửi khách.');}));tools.append(wrap);row.append(tools);$('customers').append(row);
+  wrap.append(button('Chép tin nhắn',async()=>{await navigator.clipboard.writeText('ID truy cập của bạn: '+user.accessId+'\nhttps://cotdostore.github.io/shopweb/customer-portal/\nNhập ID để xem dịch vụ đã được cấp và thông tin mới nhất.');notice('Đã chép tin nhắn để gửi khách.');}));tools.append(wrap);row.append(tools);$('customers').append(row);
  }
  $('accounts').replaceChildren();
  for(const account of state.accounts){

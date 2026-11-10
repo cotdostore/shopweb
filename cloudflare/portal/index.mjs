@@ -4,7 +4,7 @@ import {grantExpiry} from '../../portal-assets/duration.mjs';
 
 const API='/portal/api', HOUR=3600000;
 const GITHUB_ORIGIN='https://cotdostore.github.io';
-const CUSTOMER_URL=GITHUB_ORIGIN+'/shopweb/chatgpt/';
+const CUSTOMER_URL=GITHUB_ORIGIN+'/shopweb/customer-portal/';
 const ADMIN_URL=GITHUB_ORIGIN+'/shopweb/admin/';
 const customerCookie='__Host-cotdo_customer', adminCookie='__Host-cotdo_admin';
 const headers={

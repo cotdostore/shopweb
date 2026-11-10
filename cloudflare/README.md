@@ -1,10 +1,11 @@
 # Cốt Đờ Store — backend
 
-- Trang khách: https://cotdostore.github.io/shopweb/chatgpt/
+- Trang khách: https://cotdostore.github.io/shopweb/customer-portal/
 - Trang quản trị: https://cotdostore.github.io/shopweb/admin/
 - API/bot: https://cotdo-messenger-bot.kazuto121100.workers.dev
 
-Sửa giao diện trực tiếp trong `admin/`, `chatgpt/` và `portal-assets/`.
+Sửa giao diện trực tiếp trong `admin/`, `customer-portal/` và `portal-assets/`.
+GitHub Pages chuyển link `/chatgpt/` cũ sang `/customer-portal/`; repo không giữ bản sao giao diện ở thư mục cũ.
 `prices-core.js` là nguồn duy nhất của logic giá dùng chung cho web và bot.
 `portal-assets/duration.mjs` là nguồn duy nhất của cách tính hạn dùng.
 Thư mục `cloudflare/` chỉ giữ backend, schema và công cụ triển khai.
