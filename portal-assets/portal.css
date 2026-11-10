@@ -10,9 +10,8 @@
 .customer-page .brand-logo img{display:block;width:100%;height:100%;object-fit:cover}
 .customer-page .brand-name{font-size:clamp(20px,1vw,24px);font-weight:800;color:#0b3a2a;text-shadow:0 1px 0 #fff}
 .customer-page .brand-name span{color:#0e5c3f}
-.customer-page .headline{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:clamp(28px,2.7vw,42px);font-weight:550;line-height:1.2;letter-spacing:-1.2px;text-align:center;margin:35px 0;width:100%;overflow-wrap:normal}
-.customer-page .side-bottom{font-size:12px;line-height:1.5;text-align:center;color:#eafff2}
-.customer-page .side-foot{margin:0;color:#eafff2cc;font-size:11px}
+.customer-page .headline{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:clamp(28px,2.7vw,42px);font-weight:550;line-height:1.2;letter-spacing:-1.2px;text-align:center;margin:auto 0;width:100%;overflow-wrap:normal}
+.customer-page .customer-footer{display:block;margin:0 0 20px;padding:0;border:0;background:none;box-shadow:none;text-align:center;font-size:12px;color:var(--muted)}
 .customer-page .login-note{display:block;color:var(--muted);font-size:11px;line-height:1.8}
 .customer-page .service-icon img{width:26px;height:26px;object-fit:contain}
 .customer-page .action-icon{display:block;width:16px;height:16px;object-fit:contain;flex-shrink:0}
@@ -31,8 +30,6 @@
  .customer-page .brand-logo{width:36px;height:36px}
  .customer-page .brand-name{font-size:15px;line-height:1.1}
  .customer-page .headline{font-family:"Baloo 2","Segoe UI",sans-serif;font-size:clamp(16px,4vw,20px);font-weight:800;line-height:1.2;letter-spacing:0;text-align:right;text-wrap:balance;margin:0}
- .customer-page .side-bottom{display:flex;grid-column:1/-1;justify-content:flex-end;text-align:right}
- .customer-page .side-foot{margin:0;font-size:11px}
  .customer-page .topbar>span{white-space:nowrap}
  .customer-page .action-icon{width:18px;height:18px}
  .customer-page .muted{font-size:16px;line-height:1.65}
