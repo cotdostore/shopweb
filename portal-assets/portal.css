@@ -43,8 +43,6 @@
  .customer-page input{font-size:16px}
  .customer-page input::placeholder{font-size:15px}
  .customer-page .primary,.customer-page .secondary,.customer-page .ghost{font-size:15px;min-height:44px}
- .customer-page .step{font-size:14px}
- .customer-page .step span{font-size:11px;letter-spacing:1.2px}
  .customer-page h2{font-size:34px}
  .customer-page .page-heading{flex-wrap:wrap;gap:12px}
  .customer-page .page-heading h2{font-size:30px}
