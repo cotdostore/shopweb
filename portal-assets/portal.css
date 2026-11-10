@@ -10,7 +10,7 @@
 .customer-page .brand-logo img{display:block;width:100%;height:100%;object-fit:cover}
 .customer-page .brand-name{font-size:clamp(20px,1vw,24px);font-weight:800;color:#0b3a2a;text-shadow:0 1px 0 #fff}
 .customer-page .brand-name span{color:#0e5c3f}
-.customer-page .headline{font-size:clamp(28px,2.7vw,42px);font-weight:800;line-height:1.12;letter-spacing:1px;text-align:center;margin:35px 0;width:100%;overflow-wrap:normal}
+.customer-page .headline{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:clamp(28px,2.7vw,42px);font-weight:550;line-height:1.2;letter-spacing:-1.2px;text-align:center;margin:35px 0;width:100%;overflow-wrap:normal}
 .customer-page .side-bottom{font-size:12px;line-height:1.5;text-align:center;color:#eafff2}
 .customer-page .side-foot{margin:8px 0 0;color:#eafff2cc;font-size:11px}
 .customer-page .login-note{display:block;color:var(--muted);font-size:11px;line-height:1.8}
@@ -24,7 +24,9 @@
  .customer-page .brand{gap:7px}
  .customer-page .brand-logo{width:30px;height:30px}
  .customer-page .brand-name{font-size:clamp(11px,3.1vw,14px);line-height:1.1}
- .customer-page .headline{font-size:clamp(18px,4.2vw,28px);line-height:1.15;letter-spacing:.3px;margin:0}
+ .customer-page .headline{font-size:clamp(18px,4.2vw,28px);line-height:1.2;letter-spacing:-.4px;margin:0}
  .customer-page .side-bottom{display:flex;grid-column:1/-1;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #ffffff40;padding-top:8px;font-size:10px;text-align:left}
+ .customer-page .side-bottom>span:first-child{color:#0b3a2a}
+ .customer-page .side-bottom .status-dot{background:#1e6b4b}
  .customer-page .side-foot{margin:0;font-size:10px}
 }
