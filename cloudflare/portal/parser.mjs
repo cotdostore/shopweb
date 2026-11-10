@@ -11,13 +11,19 @@ export function safeUrl(value) {
 export function parseCredentials(paragraphs) {
  if (!Array.isArray(paragraphs)||paragraphs.length>5000) throw new Error('Cấu trúc tài liệu không hợp lệ.');
  const rows=paragraphs.map(p=>({text:typeof p.text==='string'?p.text.trim():'',links:Array.isArray(p.links)?p.links:[]}));
- const emails=rows.flatMap((p,i)=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.text)?[{i,value:p.text}]:[]);
+ const emails=rows.flatMap((p,i)=>{
+  const value=p.text.replace(/^(?:tk|tài khoản|tai khoan|email)\s*:\s*/i,'');
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)?[{i,value}]:[];
+ });
  if(emails.length!==1) throw new Error('Cần đúng một dòng email tài khoản trong Docs.');
  const email=emails[0];
- const password=rows.slice(email.i+1).find(p=>p.text)?.text;
- if(!password||password.length>1000||/^(?:\(|lấy mã|lay ma|https?:)/i.test(password)) throw new Error('Chưa xác định được dòng mật khẩu ngay sau email.');
+ const password=rows.slice(email.i+1).find(p=>p.text)?.text.replace(/^(?:mk|mật khẩu|mat khau)\s*:\s*/i,'');
+ if(!password||password.length>1000||/^(?:\(|lấy mã|lay ma|https?:|(?:link\s*)?2fa\s*:)/i.test(password)) throw new Error('Chưa xác định được dòng mật khẩu ngay sau email.');
  const candidates=rows.filter(p=>/xác minh|xac minh|2fa|bấm vào đây|bam vao day/i.test(p.text))
- .flatMap(p=>p.links.map(l=>safeUrl(l.url)).filter(Boolean));
+ .flatMap(p=>{
+  const explicit=p.text.match(/^(?:link\s*)?(?:2fa|lấy mã(?:\s+xác minh)?|lay ma(?:\s+xac minh)?|xác minh|xac minh)\s*:\s*(https:\/\/\S+)$/i);
+  return [...p.links.map(l=>safeUrl(l.url)),explicit?safeUrl(explicit[1]):null].filter(Boolean);
+ });
  const urls=[...new Set(candidates)];
  if(urls.length!==1) throw new Error('Cần đúng một link HTTPS lấy mã 2FA trong Docs.');
  return {username:email.value,password,twoFactorUrl:urls[0]};

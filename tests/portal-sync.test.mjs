@@ -5,7 +5,24 @@ import vm from 'node:vm';
 import {webcrypto} from 'node:crypto';
 import {handlePortal} from '../cloudflare/portal/index.mjs';
 import {digest} from '../cloudflare/portal/crypto.mjs';
+import {parseCredentials} from '../cloudflare/portal/parser.mjs';
 globalThis.crypto ??= webcrypto;
+
+test('Docs credentials accept labeled fields and preserve the original hyperlink format',()=>{
+ const expected={username:'fixture@example.test',password:'fixture-password',twoFactorUrl:'https://example.test/verify'};
+ assert.deepEqual(parseCredentials([
+  {text:'Tk: fixture@example.test'},{text:'Mk: fixture-password'},{text:'Link 2fa: https://example.test/verify'}
+ ]),expected);
+ assert.deepEqual(parseCredentials([
+  {text:'fixture@example.test'},{text:'fixture-password'},{text:'LẤY MÃ XÁC MINH: BẤM VÀO ĐÂY',links:[{url:'https://example.test/verify'}]}
+ ]),expected);
+});
+test('Docs credentials reject ambiguous fields and unsafe verification links',()=>{
+ assert.throws(()=>parseCredentials([{text:'Tk: fixture@example.test'},{text:'Link 2fa: https://example.test/verify'}]),/dòng mật khẩu/);
+ assert.throws(()=>parseCredentials([{text:'Tk: first@example.test'},{text:'second@example.test'},{text:'Mk: fixture'}]),/đúng một dòng email/);
+ assert.throws(()=>parseCredentials([{text:'Tk: fixture@example.test'},{text:'Mk: fixture'},{text:'Link 2fa: https://example.test/a'},{text:'2FA: https://example.test/b'}]),/đúng một link HTTPS/);
+ assert.throws(()=>parseCredentials([{text:'Tk: fixture@example.test'},{text:'Mk: fixture'},{text:'Link 2fa: https://user:password@example.test/verify'}]),/đúng một link HTTPS/);
+});
 
 test('sync discovery requires a token and returns current active sources only',async()=>{
  const hash=await digest('test-sync-token');
@@ -20,10 +37,14 @@ test('sync discovery requires a token and returns current active sources only',a
  let response=await handlePortal(request('test-sync-token'),env);
  assert.match(response.headers.get('Cache-Control'),/no-store/);
  assert.deepEqual(await response.json(),{sourceIds:['document_first']});
+ const legacy=new Request('https://worker.example/portal/api/sync/sources',{headers:{Authorization:'Bearer test-sync-token',Origin:'https://script.google.com'}});
+ assert.deepEqual(await (await handlePortal(legacy,env)).json(),{sourceIds:['document_first']});
  accounts=[{source_id:'document_new',active:1}];
  assert.deepEqual(await (await handlePortal(request('test-sync-token'),env)).json(),{sourceIds:['document_new']});
  accounts=[];
  assert.deepEqual(await (await handlePortal(request('test-sync-token'),env)).json(),{sourceIds:[]});
+ accounts=Array.from({length:1001},(_,i)=>({source_id:'document_'+i,active:1}));
+ assert.equal((await handlePortal(request('test-sync-token'),env)).status,503);
 });
 
 const script=await readFile(new URL('../portal-assets/Code.gs',import.meta.url),'utf8');

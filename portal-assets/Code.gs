@@ -8,7 +8,7 @@ function installSync() {
   syncPortal();
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'syncPortal')
     .forEach(t => ScriptApp.deleteTrigger(t));
-  ScriptApp.newTrigger('syncPortal').timeBased().everyMinutes(1).create();
+  ScriptApp.newTrigger('syncPortal').timeBased().everyMinutes(5).create();
 }
 function portalConfig_() {
   const properties = PropertiesService.getScriptProperties();

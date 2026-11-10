@@ -106,7 +106,7 @@ async function customerSnapshot(request,env,selected,includeDetails=true) {
  return {name:rows[0].display_name,accounts,details:includeDetails&&account?.secret?await decryptAccount(env,account):null};
 }
 export async function updateFromDoc(env,sourceId,paragraphs,observedAt=now()) {
- const row=await query(env,'SELECT * FROM portal_accounts WHERE source_id=?',sourceId).first();
+ const row=await query(env,'SELECT * FROM portal_accounts WHERE source_id=? AND active=1',sourceId).first();
  if(!row)throw new Problem('Docs chưa được gắn với dịch vụ.',404);
  if(!Number.isSafeInteger(observedAt)||observedAt>now()+60000||observedAt<now()-10*60000)throw new Problem('Mốc đồng bộ không hợp lệ.');
  if(observedAt<=row.observed_at)return {ok:true,ignored:true};
@@ -121,16 +121,21 @@ export async function updateFromDoc(env,sourceId,paragraphs,observedAt=now()) {
   changed?await seal(credentials,env.PORTAL_KEY,'account:'+row.id):row.secret,now(),changed?now():row.updated_at,observedAt,row.id,observedAt).first();
  return {ok:true,changed:!!updated&&changed,ignored:!updated};
 }
-async function sync(request,env) {
+async function requireSyncToken(request,env) {
  const auth=request.headers.get('Authorization')??'';
  if(!auth.startsWith('Bearer ')||auth.length>120)throw new Problem('Không được phép.',401);
  const tokenHash=await digest(auth.slice(7));
  const config=await query(env,"SELECT value FROM portal_config WHERE key='sync_token_hash' AND value=?",tokenHash).first();
  if(!config)throw new Problem('Sync token không hợp lệ.',401);
- if(request.method==='GET') {
-  const sources=await query(env,'SELECT DISTINCT source_id FROM portal_accounts WHERE active=1 AND source_id IS NOT NULL ORDER BY source_id').all();
-  return reply({sourceIds:sources.results.map(row=>row.source_id)});
- }
+}
+async function syncSources(request,env) {
+ await requireSyncToken(request,env);
+ const {results}=await query(env,"SELECT DISTINCT source_id FROM portal_accounts WHERE active=1 AND source_id IS NOT NULL AND source_id<>'' ORDER BY source_id LIMIT 1001").all();
+ if(results.length>1000)throw new Problem('Danh sách đồng bộ vượt quá 1000 Docs.',503);
+ return reply({sourceIds:results.map(row=>row.source_id)});
+}
+async function sync(request,env) {
+ await requireSyncToken(request,env);
  const data=await body(request);
  return reply(await updateFromDoc(env,String(data.sourceId??''),data.paragraphs,data.observedAt));
 }
@@ -209,7 +214,7 @@ const githubApi=route=>customerApi(route)||['/admin/login','/admin/bootstrap','/
 export async function handlePortal(request,env) {
  const url=new URL(request.url),origin=request.headers.get('Origin');
  // The Apps Script integration authenticates with its own sync token.
- if(url.pathname===API+'/sync')return routePortal(request,env);
+ if(url.pathname===API+'/sync'||url.pathname===API+'/sync/sources')return routePortal(request,env);
  if(url.pathname.startsWith(API+'/')&&origin&&origin!==url.origin) {
   const route=url.pathname.slice(API.length);
   if(origin!==GITHUB_ORIGIN||!githubApi(route))return reply({error:'Nguồn truy cập không được phép.'},403);
@@ -227,7 +232,8 @@ async function routePortal(request,env) {
  if(!env.PORTAL_DB||!env.PORTAL_KEY)return reply({error:'Cổng dịch vụ chưa được cấu hình.'},503);
  try {
   const route=path.slice(API.length);
-  if(route==='/sync'&&['GET','POST'].includes(request.method))return await sync(request,env);
+  if((route==='/sync'||route==='/sync/sources')&&request.method==='GET')return await syncSources(request,env);
+  if(route==='/sync'&&request.method==='POST')return await sync(request,env);
   const github=request.headers.get('Origin')===GITHUB_ORIGIN&&githubApi(route);
   if(!['GET','HEAD'].includes(request.method)&&request.headers.get('Origin')!==url.origin&&!github)throw new Problem('Nguồn truy cập không được phép.',403);
   if(route==='/login'&&request.method==='POST') {

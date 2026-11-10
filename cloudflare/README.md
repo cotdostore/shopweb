@@ -34,7 +34,8 @@ Mỗi lượt chạy, script gọi GET `/portal/api/sync` bằng sync token đ�
 Thêm, đổi hoặc tắt Docs ngay trên trang quản trị; không cần sửa Script properties hay tạo lại token. `PORTAL_DOC_IDS` cũ được bỏ qua.
 Google account chạy script vẫn cần quyền đọc từng Docs. Nếu Docs chưa được chia sẻ cho account đó, script không thể đọc.
 Nâng cấp bản cũ: triển khai backend mới trước, thay `Code.gs` trong dự án Apps Script hiện có. Giữ nguyên hai properties và trigger `syncPortal`; không cần cấp thêm scope.
-Chạy `installSync` một lần để đọc Docs mỗi phút; trang khách kiểm tra lại mỗi 15 giây.
+Chạy `installSync` một lần để đọc Docs mỗi 5 phút; trang khách kiểm tra lại mỗi 15 giây.
+Docs hỗ trợ mẫu cũ (email và mật khẩu ở hai dòng liên tiếp, hyperlink xác minh) hoặc nhãn `Tk:`, `Mk:`, `Link 2fa: https://…`. Mỗi Docs cần đúng một email và một link HTTPS 2FA.
 Token GitHub quản trị phải có quyền Admin đối với `cotdostore/shopweb`.
 Phiên quản trị chỉ giữ trong bộ nhớ tab và hết hạn sau hai giờ.
 
