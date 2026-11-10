@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS portal_sessions (
  role TEXT NOT NULL,
  expires_at INTEGER NOT NULL
 );
+CREATE INDEX IF NOT EXISTS portal_grants_account ON portal_grants(account_id);
 CREATE INDEX IF NOT EXISTS portal_sessions_expiry ON portal_sessions(expires_at);
 CREATE INDEX IF NOT EXISTS portal_sessions_customer ON portal_sessions(customer_id);
 CREATE INDEX IF NOT EXISTS portal_accounts_service ON portal_accounts(service,active);

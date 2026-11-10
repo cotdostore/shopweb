@@ -40,7 +40,13 @@ function render(){
   const row=node('tr'),name=node('td');name.append(node('strong',account.label),node('small',account.service+(!account.active?' · Đã tắt':'')));row.append(name);
   const source=node('td',account.source_id?'Google Docs':'Thủ công');if(account.source_id){const a=node('a','Mở Docs ↗');a.href='https://docs.google.com/document/d/'+encodeURIComponent(account.source_id)+'/edit';a.target='_blank';a.rel='noopener noreferrer';source.append(node('br'),a);}row.append(source);
   const sync=node('td');sync.append(node('span',account.sync_error?'Đồng bộ lỗi':!account.checked_at?'Chưa đồng bộ':Date.now()-account.checked_at>300000?'Chưa xác nhận gần đây':'Đã cập nhật','tag'+(account.sync_error?' blocked':'')),node('small',date(account.checked_at)));if(account.sync_error)sync.append(node('small',account.sync_error));row.append(sync);
-  const edit=node('td');edit.append(button('Chỉnh sửa',()=>openAccount(account)));row.append(edit);$('accounts').append(row);
+  const tools=node('td'),actions=node('div',null,'table-actions');actions.append(button('Chỉnh sửa',()=>openAccount(account)));
+  actions.append(button('Xóa',async()=>{
+   if(!confirm('Xóa tài khoản dịch vụ "'+account.label+'"? Thông tin đã lưu và toàn bộ quyền cấp cho tài khoản này sẽ bị xóa. Google Docs gốc vẫn giữ nguyên.'))return;
+   await api('/admin/account','DELETE',{id:account.id});
+   if($('account-id').value===account.id){$('account-form').reset();$('account-form').hidden=true;}
+   await load();notice('Đã xóa tài khoản dịch vụ và quyền cấp liên quan. Google Docs gốc vẫn giữ nguyên.');
+  },'secondary danger'));tools.append(actions);row.append(tools);$('accounts').append(row);
  }
 }
 async function load(){const version=generation,request=++loadVersion,data=await api('/admin/state');if(version!==generation||request!==loadVersion)return;state=data;$('login').hidden=true;$('admin').hidden=false;$('logout').hidden=false;render();}

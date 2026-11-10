@@ -43,3 +43,4 @@ Lệnh Page: `/id ID`, `/cap ID gpt 3month`, `/block ID`, `/unblock ID`, `/taikh
 `/admin` mở menu; `/xoa` chỉ xử lý ID thuộc cuộc chat hiện tại.
 Nút Xóa ID trên web và lệnh `/xoa` dùng chung transaction xóa khách, quyền và phiên;
 tài khoản dịch vụ dùng chung vẫn giữ nguyên.
+Nút Xóa trong danh sách tài khoản dịch vụ xóa bản kết nối, thông tin đăng nhập đã mã hóa và quyền cấp của tài khoản đó trong một transaction. Google Docs gốc, khách hàng và các gói khác giữ nguyên; Docs đã xóa khỏi danh sách sẽ không còn được script tự đồng bộ.

@@ -180,6 +180,15 @@ async function adminRoute(request,env,path) {
   }
   return reply({ok:true});
  }
+ if(path==='/admin/account'&&request.method==='DELETE') {
+  if(typeof data.id!=='string'||!data.id.trim()||data.id.length>100)throw new Problem('Thiếu ID tài khoản cần xóa.');
+  // Delete grants and stored credentials together; customers and other services stay intact.
+  const results=await env.PORTAL_DB.batch([
+   query(env,'DELETE FROM portal_grants WHERE account_id=?',data.id),
+   query(env,'DELETE FROM portal_accounts WHERE id=? RETURNING id',data.id)]);
+  if(!results[1].results.length)throw new Problem('Không tìm thấy tài khoản.',404);
+  return reply({ok:true});
+ }
  if(path==='/admin/account'&&['POST','PUT'].includes(request.method)) {
   const id=request.method==='POST'?crypto.randomUUID():String(data.id??'');
   const service=String(data.service??'').trim().toLowerCase(),label=String(data.label??'').trim();
