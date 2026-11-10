@@ -1,0 +1,540 @@
+{
+  "version": 1,
+  "currency": "VND",
+  "groups": [
+    {
+      "id": "netflix-premium-1",
+      "product": "Netflix Premium",
+      "variant": "LOẠI DÙNG CHUNG",
+      "items": [
+        {
+          "id": "netflix-premium-1-1",
+          "term": "5 NGÀY",
+          "price": 19000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "netflix-premium-1-2",
+          "term": "1 THÁNG",
+          "price": 49000,
+          "oldPrice": 80000,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "netflix-premium-1-3",
+          "term": "3 THÁNG",
+          "price": 99000,
+          "oldPrice": 240000,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "netflix-premium-1-4",
+          "term": "6 THÁNG",
+          "price": 179000,
+          "oldPrice": 480000,
+          "priceSuffix": "",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "netflix-premium-2",
+      "product": "Netflix Premium",
+      "variant": "LOẠI PRO - DÙNG RIÊNG",
+      "items": [
+        {
+          "id": "netflix-premium-2-1",
+          "term": "ADD FAMILY - 1 THÁNG",
+          "price": 79000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "netflix-premium-2-2",
+          "term": "EXTRA SLOT - 1 THÁNG",
+          "price": 89000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "youtube-premium-1",
+      "product": "Youtube Premium",
+      "variant": "DÙNG RIÊNG - ADD FAMILY",
+      "items": [
+        {
+          "id": "youtube-premium-1-1",
+          "term": "1 THÁNG",
+          "price": 25000,
+          "oldPrice": 60000,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "youtube-premium-1-2",
+          "term": "3 THÁNG",
+          "price": 64000,
+          "oldPrice": 180000,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "youtube-premium-1-3",
+          "term": "6 THÁNG",
+          "price": 119000,
+          "oldPrice": 360000,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "youtube-premium-1-4",
+          "term": "12 THÁNG",
+          "price": 229000,
+          "oldPrice": 720000,
+          "priceSuffix": "",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "youtube-premium-2",
+      "product": "Youtube Premium",
+      "variant": "DÙNG RIÊNG - FAMILY CỐ ĐỊNH",
+      "items": [
+        {
+          "id": "youtube-premium-2-1",
+          "term": "3 THÁNG",
+          "price": 169000,
+          "oldPrice": 360000,
+          "priceSuffix": "",
+          "available": false
+        },
+        {
+          "id": "youtube-premium-2-2",
+          "term": "6 THÁNG",
+          "price": 289000,
+          "oldPrice": 720000,
+          "priceSuffix": "",
+          "available": false
+        },
+        {
+          "id": "youtube-premium-2-3",
+          "term": "12 THÁNG",
+          "price": 489000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": false
+        }
+      ]
+    },
+    {
+      "id": "chatgpt-1",
+      "product": "ChatGPT",
+      "variant": "XÀI CHUNG (2-4 NGƯỜI)",
+      "items": [
+        {
+          "id": "chatgpt-1-1",
+          "term": "1 THÁNG PLUS",
+          "price": 79000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "chatgpt-1-2",
+          "term": "3 THÁNG PLUS",
+          "price": 199000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "chatgpt-2",
+      "product": "ChatGPT",
+      "variant": "XÀI RIÊNG",
+      "items": [
+        {
+          "id": "chatgpt-go-private-1-month",
+          "term": "1 THÁNG GO",
+          "price": 85000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": false
+        },
+        {
+          "id": "chatgpt-2-1",
+          "term": "1 THÁNG PLUS",
+          "price": 250000,
+          "oldPrice": 400000,
+          "priceSuffix": "",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "combo-google-one-1",
+      "product": "Combo Google One",
+      "variant": "",
+      "items": [
+        {
+          "id": "combo-google-one-1-1",
+          "term": "1 THÁNG",
+          "price": 49000,
+          "oldPrice": 80000,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "combo-google-one-1-2",
+          "term": "3 THÁNG",
+          "price": 119000,
+          "oldPrice": 240000,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "combo-google-one-1-3",
+          "term": "6 THÁNG",
+          "price": 199000,
+          "oldPrice": 340000,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "combo-google-one-1-4",
+          "term": "12 THÁNG",
+          "price": 219000,
+          "oldPrice": 480000,
+          "priceSuffix": "",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "combo-apple-one-1",
+      "product": "Combo Apple One",
+      "variant": "NÂNG CHÍNH CHỦ",
+      "items": [
+        {
+          "id": "combo-apple-one-1-1",
+          "term": "1 THÁNG",
+          "price": 69000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "combo-apple-one-1-2",
+          "term": "3 THÁNG",
+          "price": 169000,
+          "oldPrice": 180000,
+          "priceSuffix": "",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "canva-1",
+      "product": "Canva",
+      "variant": "CANVA EDU",
+      "items": [
+        {
+          "id": "canva-1-1",
+          "term": "1 THÁNG",
+          "price": 20000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "canva-1-2",
+          "term": "1 NĂM",
+          "price": 69000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "canva-2",
+      "product": "Canva",
+      "variant": "CANVA PRO",
+      "items": [
+        {
+          "id": "canva-2-1",
+          "term": "1 THÁNG",
+          "price": 25000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "canva-2-2",
+          "term": "6 THÁNG",
+          "price": 69000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "canva-2-3",
+          "term": "1 NĂM",
+          "price": 79000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "canva-3",
+      "product": "Canva",
+      "variant": "CANVA BUSINESS",
+      "items": [
+        {
+          "id": "canva-3-1",
+          "term": "1 THÁNG",
+          "price": 30000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "canva-3-2",
+          "term": "3 THÁNG",
+          "price": 69000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "canva-3-3",
+          "term": "1 NĂM",
+          "price": 89000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "capcut-pro-1",
+      "product": "CapCut Pro",
+      "variant": "",
+      "items": [
+        {
+          "id": "capcut-pro-1-1",
+          "term": "7 NGÀY",
+          "price": 15000,
+          "oldPrice": 30000,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "capcut-pro-1-2",
+          "term": "1 THÁNG",
+          "price": 39000,
+          "oldPrice": 120000,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "capcut-pro-1-3",
+          "term": "3 THÁNG",
+          "price": 99000,
+          "oldPrice": 360000,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "capcut-pro-1-4",
+          "term": "6 THÁNG",
+          "price": 239000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "super-duolingo-1",
+      "product": "Super Duolingo",
+      "variant": "",
+      "items": [
+        {
+          "id": "super-duolingo-1-1",
+          "term": "1 THÁNG",
+          "price": 25000,
+          "oldPrice": 30000,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "super-duolingo-1-2",
+          "term": "3 THÁNG",
+          "price": 49000,
+          "oldPrice": 90000,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "super-duolingo-1-3",
+          "term": "6 THÁNG",
+          "price": 89000,
+          "oldPrice": 120000,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "super-duolingo-1-4",
+          "term": "1 NĂM",
+          "price": 199000,
+          "oldPrice": 240000,
+          "priceSuffix": "",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "quizlet-studocu-1",
+      "product": "Quizlet / Studocu",
+      "variant": "",
+      "items": [
+        {
+          "id": "quizlet-studocu-1-1",
+          "term": "1 THÁNG",
+          "price": 29000,
+          "oldPrice": 40000,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "quizlet-studocu-1-2",
+          "term": "3 THÁNG",
+          "price": 79000,
+          "oldPrice": 120000,
+          "priceSuffix": "",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "scribd-1",
+      "product": "SCRIBD",
+      "variant": "",
+      "items": [
+        {
+          "id": "scribd-1-1",
+          "term": "1 THÁNG",
+          "price": 59000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "scribd-1-2",
+          "term": "3 THÁNG",
+          "price": 159000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "spotify-1",
+      "product": "Spotify",
+      "variant": "",
+      "items": [
+        {
+          "id": "spotify-1-1",
+          "term": "XÁC MINH STUDENT",
+          "price": 35000,
+          "oldPrice": null,
+          "priceSuffix": "/NĂM",
+          "available": true
+        },
+        {
+          "id": "spotify-1-2",
+          "term": "GÓI STUDENT",
+          "price": 30000,
+          "oldPrice": null,
+          "priceSuffix": "/THÁNG",
+          "available": true
+        },
+        {
+          "id": "spotify-1-3",
+          "term": "INDIVIDUAL / CÁ NHÂN",
+          "price": 50000,
+          "oldPrice": null,
+          "priceSuffix": "/THÁNG",
+          "available": true
+        },
+        {
+          "id": "spotify-1-4",
+          "term": "INDIVIDUAL / CÁ NHÂN",
+          "price": 460000,
+          "oldPrice": null,
+          "priceSuffix": "/NĂM",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "soundcloud-1",
+      "product": "SoundCloud",
+      "variant": "",
+      "items": [
+        {
+          "id": "soundcloud-1-1",
+          "term": "1 THÁNG",
+          "price": 110000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "soundcloud-1-2",
+          "term": "1 NĂM",
+          "price": 520000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "meitu-1",
+      "product": "Meitu",
+      "variant": "",
+      "items": [
+        {
+          "id": "meitu-1-1",
+          "term": "VIP - 7 NGÀY",
+          "price": 19000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        },
+        {
+          "id": "meitu-1-2",
+          "term": "SVIP - 1 THÁNG",
+          "price": 90000,
+          "oldPrice": null,
+          "priceSuffix": "",
+          "available": true
+        }
+      ]
+    }
+  ]
+}

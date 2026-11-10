@@ -1,0 +1,9 @@
+{
+ "account_id":"9e8e17fd7f71e0c36c7c428f89a5c9fd",
+ "script_name":"cotdo-messenger-bot",
+ "main_module":"bot/worker.js",
+ "compatibility_date":"2026-10-08",
+ "database":{"binding":"PORTAL_DB","id":"14532a61-5c26-463c-98d2-9fb8d8c80037","name":"cotdo-service-access"},
+ "secret_names":["PAGE_ACCESS_TOKEN","VERIFY_TOKEN","PORTAL_KEY"],
+ "public_url":"https://cotdostore.github.io/shopweb-test1.1/chatgpt/"
+}

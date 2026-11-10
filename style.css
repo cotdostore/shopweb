@@ -1,0 +1,539 @@
+:root{
+  --blue:#2f6fed;
+  --red:#e8393f;
+  --green:#15a34a;
+  --orange:#f2861f;
+  --black:#141414;
+  --card-bg:#f2f2f0;
+  --card-border:#1a1a1a;
+  --sidebar-dark:#0b3a2a;
+  --sidebar-mid:#1e6b4b;
+  --sidebar-light:#eafff2;
+  --page-mint:#c7f3d6;
+
+  /* Khoảng cách CỐ ĐỊNH giữa các card (không đổi theo kích thước màn hình) */
+  --gap:16px;
+  --masonry-row:1px;
+  /* Bề rộng tối đa của 1 card */
+  --card-w:350px;
+
+  /* ===== THANG CỠ CHỮ (dùng chung cho MỌI thiết bị) =====
+     Thứ tự cố định, không bao giờ đảo:
+       heading (h2) > divider > row > lead > note
+     Mỗi dòng: clamp(NHỎ NHẤT , theo bề ngang card , TO NHẤT)
+       - số px đầu  = sàn, để trên điện thoại vẫn đọc được, khỏi zoom
+       - số cqw     = tỉ lệ theo BỀ NGANG CARD (không phải màn hình),
+                      nên card to hay nhỏ chữ vẫn cân đối như nhau
+       - số px cuối = trần, để trên màn hình bự chữ không phình
+     Muốn chỉnh cỡ chữ thì sửa đúng ở đây, đừng sửa rải rác bên dưới. */
+  --fs-h2:      clamp(15.5px, 7.95cqw, 25px);
+  --fs-divider: clamp(12px,   5.75cqw, 18px);
+  --fs-row:     clamp(11px,   5.25cqw, 16.5px);
+  --fs-lead:    clamp(10.5px, 4.90cqw, 15.5px);
+  /* Note có 3 bậc rõ ràng: YouTube nhỏ, note thường ở giữa, Netflix lớn. */
+  --fs-note-small:  clamp(8px,  3.45cqw, 11px);
+  --fs-note:        clamp(9px,  3.95cqw, 12.5px);
+  --fs-note-large:  clamp(10px, 4.45cqw, 14px);
+}
+
+*{box-sizing:border-box;}
+
+html,body{
+  margin:0;
+  padding:0;
+  height:100%;
+  font-family:"Roboto Condensed","Inter",sans-serif;
+  color:var(--black);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+.app{
+  display:flex;
+  width:100vw;
+  height:100vh;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar{
+  flex:0 0 clamp(190px, 15vw, 260px);
+  background:linear-gradient(155deg, var(--sidebar-light) 0%, #6fd39c 22%, var(--sidebar-mid) 55%, var(--sidebar-dark) 100%);
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  padding:clamp(14px,2vh,26px) clamp(14px,1.4vw,22px);
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.brand-logo{
+  width: 64px;
+  height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: transparent;
+  /*
+  border:2px solid var(--black);
+  border-radius:9px;
+  */
+  flex-shrink:0;
+  overflow:hidden;
+}
+.brand-logo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.brand-name{
+  font-family:"Baloo 2",sans-serif;
+  font-weight:800;
+  font-size:clamp(20px,1vw,24px);
+  line-height:1.15;
+  color:var(--sidebar-dark);
+  text-shadow:0 1px 0 #fff;
+  /* Di chuyển tên brand qua trái/phải: đổi giá trị --brand-name-x
+     (số dương = qua phải, số âm = qua trái), vd: -10px, 15px... */
+  transform:translateX(var(--brand-name-x, 20px));
+  position:relative;
+}
+.brand-name span{color:#0e5c3f;}
+.access-link{display:block;border:1px solid #ffffff80;border-radius:8px;padding:9px 10px;color:#fff;text-align:center;text-decoration:none;font-weight:700;font-size:13px;background:#0b3a2a90;white-space:nowrap;}
+.access-link:hover{background:#0b3a2a;}
+@media(max-width:860px){.access-link{order:4;grid-column:1/-1;font-size:10px;padding:7px;margin-top:6px;}}
+
+.headline{
+  font-family:"Baloo 2",sans-serif;
+  font-weight:800;
+  font-size:clamp(40px,4.6vw,72px);
+  line-height:0.95;
+  margin:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0;
+  letter-spacing:1px;
+  text-align:center;
+  width:100%;
+}
+.headline .dot{position:relative;}
+
+.tagline{
+  font-family:"Baloo 2",sans-serif;
+  font-weight:700;
+  font-size:clamp(16px,1.3vw,22px);
+  line-height:1.35;
+  margin:0;
+  text-align:center;
+  width:100%;
+}
+
+/* ================= MAIN GRID ================= */
+.grid{
+  --card-gap:var(--gap);
+  flex:1;
+  display:grid;
+  /* Cột rộng tối đa = --card-w, nên khoảng cách giữa các card LUÔN bằng --gap,
+     không phình ra khi màn hình to. Đổi --gap / --card-w để chỉnh. */
+  grid-template-columns:repeat(3, minmax(0, var(--card-w)));
+  /* Mặc định an toàn: hàng cao tự nhiên. JS chỉ bật masonry sau khi đã
+     tính xong chiều cao, nên trang không thể chồng card nếu script lỗi. */
+  grid-auto-rows:max-content;
+  justify-content:center;      /* dồn 3 cột vào giữa, phần dư ra 2 bên mép */
+  align-content:safe center;
+  align-items:start;
+  justify-items:stretch;
+  gap:var(--gap);
+  padding:var(--gap);
+  background:
+    radial-gradient(circle at 0% 0%, #daffe8 0%, transparent 45%),
+    linear-gradient(160deg, #bdf0d3 0%, #a9ebc9 55%, #9ee6c0 100%);
+  height:100vh;
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+
+.grid.masonry-ready{
+  grid-auto-rows:var(--masonry-row);
+  grid-auto-flow:row dense;
+  align-content:start;
+  column-gap:var(--card-gap);
+  row-gap:0;
+}
+
+.card{
+  background:var(--card-bg);
+  border:2px solid var(--card-border);
+  border-radius:14px;
+  padding:clamp(7px,0.9vh,14px) clamp(10px,1.1vw,18px);
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  box-shadow:0 3px 0 rgba(0,0,0,0.18);
+  transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+  cursor:pointer;
+  position:relative;
+  width:100%;
+  height:max-content;
+  align-self:start;
+  max-width:var(--card-w); /* đổi --card-w ở :root để chỉnh width card */
+  margin:0 auto;
+/* Biến card thành "container": mọi cỡ chữ bên trong tính theo BỀ NGANG CARD
+   (đơn vị cqw), nên tỉ lệ chữ giống hệt nhau trên laptop, màn to lẫn điện thoại. */
+container-type:inline-size;
+}
+
+.card:hover,
+.card:focus-within,
+.card:active{
+  transform:translateY(-6px) scale(1.015);
+  box-shadow:0 14px 22px rgba(0,0,0,0.22);
+  background:#fff;
+  z-index:5;
+}
+
+.card-head{
+  margin-top:6px;
+  margin-bottom:4px;
+  margin-left:4px;
+}
+.card-head::after{
+  content:"";
+  display:table;
+  clear:both;
+}
+
+.card-head h2{
+  font-family:"Baloo 2",sans-serif;
+  line-height:1em;
+  font-weight:800;
+  font-size:var(--fs-h2);
+  margin:0;
+  letter-spacing:0.2px;
+  text-transform:uppercase;
+  text-align:left;
+}
+
+.icon-slot{
+  flex-shrink:0;
+  width:64px;
+  height:64px;
+  border-radius:12px;
+  overflow:hidden;
+  background:transparent;
+  /*
+  border:1.5px dashed rgba(0,0,0,0.28);
+  */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  float:right;
+  margin:0 0 6px 10px;
+}
+.icon-slot img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.icon-pair{
+  display:flex;
+  gap:6px;
+  flex-shrink:0;
+  float:right;
+  margin:0 0 6px 10px;
+}
+.icon-pair .icon-slot{float:none;margin:0;}
+
+.icon-cube{
+  flex-shrink:0;
+  display:grid;
+  grid-template-columns:repeat(2, 32px);
+  grid-template-rows:repeat(2, 32px);
+  gap:4px;
+  float:right;
+  margin:0 0 6px 10px;
+}
+.icon-cube .icon-slot{
+  width:32px;
+  height:32px;
+  border-radius:8px;
+  float:none;
+  margin:0;
+}
+
+.icon-slot[data-icon="youtube"] img,
+.icon-slot[data-icon="icloud"] img,
+.icon-slot[data-icon="google-drive"] img,
+.icon-slot[data-icon="quizlet"] img,
+.icon-slot[data-icon="capcut"] img {
+  object-fit: contain;
+}
+
+.lead{
+  font-size:var(--fs-lead);
+  line-height:1.25;
+  font-weight:700;
+  margin:3px 0 0;
+  text-align:left;
+}
+
+.info{
+  margin-top:2px;
+}
+
+/* Thanh "——— TIÊU ĐỀ ———"
+   Gạch ngang KHÔNG còn gõ tay trong HTML nữa — nó do CSS vẽ (::before/::after),
+   nên luôn co giãn vừa đúng bề ngang card, không bao giờ tràn ra ngoài. */
+.divider{
+  font-weight:800;
+  font-size:var(--fs-divider);
+  margin:5px 0 2px;
+  letter-spacing:0.2px;
+  text-align:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;                 /* khoảng hở giữa chữ và gạch */
+  white-space:nowrap;
+  overflow:hidden;         /* chốt chặn cuối: không cho lòi ra khỏi card */
+}
+.divider::before,
+.divider::after{
+  content:"";
+  flex:1 1 0;              /* gạch tự co lại trước, chữ giữ nguyên */
+  min-width:0;
+  height:0;
+  border-top:2px solid currentColor;   /* gạch liền, không đứt nét */
+}
+
+/* Card chỉ có DUY NHẤT 1 divider -> ẩn 2 gạch, chỉ để lại chữ.
+   Card có từ 2 divider trở lên mới vẽ gạch (lúc đó gạch mới có tác dụng
+   phân tách các nhóm giá). Điều kiện ":not(:has(.divider ~ .divider))"
+   nghĩa là trong .info không tồn tại divider nào đứng sau một divider khác. */
+.info:not(:has(.divider ~ .divider)) .divider::before,
+.info:not(:has(.divider ~ .divider)) .divider::after{
+  content:none;
+}
+
+.note{
+  font-size:var(--fs-note);
+  font-style:italic;
+  font-weight:600;
+  margin:0 0 2px;
+  text-align:center;
+  line-height:1.2;
+  white-space:normal;
+  overflow:visible;
+}
+
+.card-netflix .note{
+  font-size:var(--fs-note-large);
+  white-space:nowrap;
+  overflow:hidden;
+}
+
+.card-youtube .note{
+  font-size:var(--fs-note-small);
+}
+
+.row{
+  font-size:var(--fs-row);
+  white-space:nowrap;   /* ép nằm 1 dòng, không xuống hàng */
+  overflow:hidden;      /* chốt chặn nếu JS auto-fit chưa chạy */
+  font-weight:800;
+  margin:1px 0;
+  line-height:1.3;
+  text-align:center;
+}
+
+.price-row{
+  display:grid;
+  align-items:baseline;
+  justify-content:center;
+  width:max-content;
+  max-width:100%;
+  margin-left:auto;
+  margin-right:auto;
+  text-align:left;
+}
+
+.price-row > *{grid-row:1;}
+.price-term{grid-column:1;text-align:left;}
+.old-price{grid-column:2;text-align:left;}
+.discount-label{grid-column:3;text-align:left;}
+.final-price{grid-column:4;text-align:left;color:var(--black);}
+
+/* Dòng có khuyến mãi: 4 cột kiểu setw, cả cụm tự ôm nội dung và nằm giữa. */
+.price-row:has(.discount-label:not(:empty)){
+  grid-template-columns:9ch 5ch 10ch 5ch;
+  column-gap:var(--price-gap, 1.1ch);
+}
+.price-row.price-row-wide:has(.discount-label:not(:empty)){
+  font-size:var(--fs-row);
+}
+.price-row:has(.discount-label:not(:empty)) .final-price{
+  color:var(--red);
+}
+
+/* Dòng không giảm giá: chỉ hiển thị [loại] [giá], rồi căn giữa cả dòng. */
+.price-row:not(:has(.discount-label:not(:empty))){
+  grid-template-columns:max-content max-content;
+  column-gap:var(--price-gap, 1.1ch);
+}
+.price-row:not(:has(.discount-label:not(:empty))) .old-price,
+.price-row:not(:has(.discount-label:not(:empty))) .discount-label{
+  display:none;
+}
+.price-row:not(:has(.discount-label:not(:empty))) .final-price{
+  grid-column:2;
+  text-align:left;
+}
+
+b{font-weight:800;}
+.blue{color:var(--blue);}
+.red{color:var(--red);}
+.green{color:var(--green);}
+.orange{color:var(--orange);}
+.black{color:var(--black);}
+
+.more-link{
+  color:var(--blue);
+  font-style:normal;
+  font-weight:800;
+  text-decoration:underline;
+  text-underline-offset:2px;
+}
+.more-link:hover{color:var(--red);}
+
+/* Phần làm mới chỉ áp dụng cho desktop. Responsive điện thoại bên dưới
+   giữ nguyên đúng layout và style cũ. */
+@media (min-width:861px){
+  .card{
+    border-width:1.5px;
+    border-radius:16px;
+    box-shadow:0 3px 0 rgba(0,0,0,0.14), 0 8px 18px rgba(21,81,54,0.07);
+  }
+  .card:hover,
+  .card:focus-within,
+  .card:active{
+    transform:translateY(-4px);
+    box-shadow:0 12px 24px rgba(0,0,0,0.18);
+  }
+}
+
+/* ================= RESPONSIVE / MOBILE ================= */
+@media (max-width: 860px){
+  :root{
+    /* Cỡ chữ banner trên điện thoại — chỉnh 3 dòng này là đủ.
+       Thứ tự: BẢNG GIÁ (to nhất) > tên sốp = slogan */
+    --m-headline: clamp(19px, 6.6vw, 30px);
+    --m-brand:    clamp(11px, 3.1vw, 14px);
+    --m-slogan:   clamp(11px, 3.1vw, 14px);
+  }
+
+  html,body{overflow-y:auto; overflow-x:hidden;}
+
+  .app{
+    flex-direction:column;
+    height:auto;
+    min-height:100vh;
+  }
+
+  /* ---- BANNER HEADER TRÊN ĐIỆN THOẠI ----
+     Chia 3 ô: [logo + tên sốp] [BẢNG GIÁ] [slogan]
+     Hai ô hai bên rộng bằng nhau (1fr) nên ô giữa nằm CHÍNH GIỮA banner
+     thật sự, không bị lệch theo độ dài chữ hai bên. */
+  .sidebar{
+    flex:0 0 auto;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+    align-items:center;
+    column-gap:8px;
+    padding:12px 14px;
+    background:linear-gradient(100deg, var(--sidebar-light) 0%, #6fd39c 30%, var(--sidebar-mid) 65%, var(--sidebar-dark) 100%);
+  }
+
+  /* ô trái: logo + tên sốp, căn lề trái */
+  .brand{
+    order:1;
+    justify-self:start;
+    gap:7px;
+  }
+  .brand-name{
+    font-size:var(--m-brand);     /* bằng cỡ slogan */
+    line-height:1.1;
+    white-space:nowrap;           /* giữ đúng 2 dòng: CỐT ĐỜ / STORE */
+    transform:none;               /* bỏ dịch ngang của bản PC */
+    text-shadow:0 1px 0 rgba(255,255,255,.55);
+  }
+
+  /* ô giữa: chỉ chữ "BẢNG GIÁ", to nhất, nằm giữa, 1 dòng
+     (muốn hiện lại "DỊCH VỤ" thì xóa dòng .headline span:nth-child(n+3)) */
+  .headline{
+    order:2;
+    justify-self:center;
+    flex-direction:row;
+    flex-wrap:nowrap;
+    white-space:nowrap;
+    gap:7px;
+    width:auto;
+    font-size:var(--m-headline);
+    line-height:1;
+  }
+  .headline span:nth-child(n+3){display:none;}
+
+  /* ô phải: slogan, căn lề phải */
+  .tagline{
+    order:3;
+    justify-self:end;
+    width:auto;
+    text-align:right;
+    font-size:var(--m-slogan);    /* bằng cỡ tên sốp */
+    line-height:1.2;
+    white-space:nowrap;
+  }
+
+  .grid{
+    --card-gap:6px;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    grid-auto-rows:max-content;
+    justify-content:stretch;   /* mobile: card giãn full 2 cột */
+    align-content:start;
+    align-items:start;
+    height:auto;
+    overflow:visible;
+    gap:6px;
+    padding:6px;
+  }
+
+  .card{
+    padding:8px 7px;   /* hẹp lại để chừa bề ngang cho chữ nằm 1 dòng */
+  }
+
+  /* cỡ chữ do thang --fs-* ở :root lo, không override nữa */
+  .icon-slot{width:26px;height:26px;border-radius:7px;margin:0 0 4px 8px;}
+  .icon-pair{margin:0 0 4px 8px;}
+  .icon-cube{grid-template-columns:repeat(2, 18px);grid-template-rows:repeat(2, 18px);gap:2px;margin:0 0 4px 8px;}
+  .icon-cube .icon-slot{width:18px;height:18px;border-radius:5px;}
+  .brand-logo{width:30px;height:30px;}
+  .divider{gap:5px;}
+
+  .card:hover,
+  .card:active{
+    transform:translateY(-3px) scale(1.02);
+  }
+}
+
+@media (max-width:420px){
+  .grid{grid-template-columns:repeat(2, 1fr);}
+  .sidebar{column-gap:6px; padding:10px 10px;}
+}

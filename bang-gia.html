@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cốt Đờ Store - Bảng Giá Dịch Vụ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Roboto+Condensed:ital,wght@0,400;0,700;1,400&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=17">
+<script src="main.js?v=13" defer></script>
+  <script type="module" src="prices-view.js?v=1"></script>
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo"><img src="assets/logo.png" alt="Cốt Đờ Store" onerror="this.style.display='none'"></div>
+        <div class="brand-name" style="--brand-name-x: 0px;">CỐT ĐỜ<br><span>STORE</span></div>
+      </div>
+
+      <h1 class="headline">
+        <span>BẢNG</span>
+        <span>GIÁ</span>
+        <span>DỊCH</span>
+        <span class="dot">VỤ</span>
+      </h1>
+
+      <p class="tagline">LƯƠNG VỪA VỀ<br>DEAL VỪA TỚI</p>
+      <a class="access-link" href="chatgpt/">TRUY CẬP DỊCH VỤ →</a>
+    </aside>
+
+    <!-- MAIN GRID -->
+    <main class="grid">
+      <p id="price-status" role="status" style="grid-column:1/-1;text-align:center">Đang tải bảng giá…</p>
+
+      <!-- NETFLIX -->
+      <article class="card card-netflix">
+        <header class="card-head">
+          <div class="icon-slot" data-icon="netflix"><img src="assets/netflix.png" alt="Netflix"
+              onerror="this.style.display='none'"></div>
+          <h2>Netflix Premium</h2>
+          <p class="lead">XEM ĐƯỢC TRÊN <b class="blue">MỌI THIẾT BỊ</b><br>CHẤT LƯỢNG <b class="blue">PREMIUM HD 4K</b>
+          </p>
+        </header>
+        <div class="info">
+          <p class="divider">LOẠI <b class="red">DÙNG CHUNG</b></p>
+          <template data-price-group="netflix-premium-1"></template>
+          
+          
+          
+
+          <p class="divider">LOẠI PRO - <b class="red">DÙNG RIÊNG</b></p>
+          <p class="note">(SET ĐƯỢC <b class="blue">MÃ PIN - MẬT KHẨU</b>)</p>
+          <template data-price-group="netflix-premium-2"></template>
+          
+          <p class="note"><a class="more-link"
+              href="https://docs.google.com/document/u/0/d/1YgoclAA87QSl13pFtw6LX1NYbQ-Z-ZY0a-XuO37Ne4Q/mobilebasic"
+              target="_blank" rel="noopener noreferrer">GIẢI THÍCH GÓI EXTRA</a></p>
+        </div>
+      </article>
+
+      <!-- YOUTUBE -->
+      <article class="card card-youtube">
+        <header class="card-head">
+          <div class="icon-slot" data-icon="youtube"><img src="assets/youtube.png" alt="YouTube"
+              onerror="this.style.display='none'"></div>
+          <h2>Youtube Premium</h2>
+            <p class="lead">ĐƯỢC TẶNG KÈM <b class="blue">YOUTUBE MUSIC PREMIUM</b></p>
+        </header>
+        <div class="info">
+          <p class="divider">DÙNG RIÊNG - <b class="red">ADD FAMILY</b></p>
+          <p class="note">ADD FAMILY MỚI MỖI THÁNG. ĐỔI FAM LIÊN TỤC, KHÔNG CẦN ĐỔI
+            MAIL. CHỈ RỜI FAM KHI MAIL BÁO “NHÓM GIA ĐÌNH KHÔNG CÒN HOẠT ĐỘNG”</p>
+          <template data-price-group="youtube-premium-1"></template>
+          
+          
+          
+          <p class="divider">DÙNG RIÊNG - <b class="red">FAMILY CỐ ĐỊNH</b></p>
+          <p class="note">ADD VÀO FAMILY VÀ DÙNG ĐẾN HẾT THỜI HẠN GÓI, KHÔNG CẦN PHẢI THOÁT MỖI THÁNG</p>
+          <p class="note">ĐANG TẠM NGỪNG BÁN GÓI NÀY DO YOUTUBE ĐANG QUÉT KHÁ CĂNG </p>
+          <template data-price-group="youtube-premium-2"></template>
+          
+          
+        </div>
+      </article>
+
+      <!-- CHATGPT -->
+      <article class="card">
+        <header class="card-head">
+          <div class="icon-slot" data-icon="chatgpt"><img src="assets/chatgpt.png" alt="ChatGPT"
+              onerror="this.style.display='none'"></div>
+          <h2>ChatGPT</h2>
+          <p class="lead">ĐĂNG NHẬP ĐƯỢC <b class="blue">MỌI THIẾT BỊ</b></p>
+        </header>
+        <div class="info">
+          <p class="divider">XÀI CHUNG <b class="red">(2-4 NGƯỜI)</b></p>
+          <template data-price-group="chatgpt-1"></template>
+          
+
+          <p class="divider">XÀI <b class="red">RIÊNG</b></p>
+          <template data-price-group="chatgpt-2"></template>
+        </div>
+      </article>
+
+      <!-- GOOGLE ONE -->
+      <article class="card">
+        <header class="card-head">
+          <div class="icon-cube">
+            <div class="icon-slot" data-icon="google-drive"><img src="assets/google-drive.png" alt="Google Drive"
+                onerror="this.style.display='none'"></div>
+            <div class="icon-slot" data-icon="google-one"><img src="assets/ggone.png" alt="Google One"
+                onerror="this.style.display='none'"></div>
+            <div class="icon-slot" data-icon="google-photos"><img src="assets/google-photos.png" alt="Google Photos"
+                onerror="this.style.display='none'"></div>
+            <div class="icon-slot" data-icon="gemini"><img src="assets/gemini.png" alt="Gemini"
+                onerror="this.style.display='none'"></div>
+          </div>
+          <h2>Combo Google One</h2>
+          <p class="lead"><b class="orange">GEMINI PRO + DUNG LƯỢNG 5TB</b><br><b class="blue">GOOGLE DRIVE, GMAIL,
+              GOOGLE PHOTO + NOTEBOOKLM, ANTIGRAVITY, VEO3...</b></p>
+        </header>
+        <div class="info">
+          <template data-price-group="combo-google-one-1"></template>
+          
+          
+          
+        </div>
+      </article>
+
+      <!-- APPLE ONE -->
+      <article class="card">
+        <header class="card-head">
+          <div class="icon-cube">
+            <div class="icon-slot" data-icon="icloud"><img src="assets/icloud.png" alt="iCloud"
+                onerror="this.style.display='none'"></div>
+            <div class="icon-slot" data-icon="apple-music"><img src="assets/apple-music.png" alt="Apple Music"
+                onerror="this.style.display='none'"></div>
+            <div class="icon-slot" data-icon="apple-tv"><img src="assets/apple-tv.png" alt="Apple TV"
+                onerror="this.style.display='none'"></div>
+            <div class="icon-slot" data-icon="apple-arcade"><img src="assets/apple-arcade.png" alt="Apple Arcade"
+                onerror="this.style.display='none'"></div>
+          </div>
+          <h2>Combo Apple One</h2>
+          <p class="lead"><b class="blue">ICLOUD 200GB + APPLE MUSIC + APPLE TV + ARCADE</b></p>
+        </header>
+        <div class="info">
+          <p class="divider">NÂNG <b class="red">CHÍNH CHỦ</b></p>
+          <template data-price-group="combo-apple-one-1"></template>
+          
+
+        </div>
+      </article>
+
+      <!-- CANVA -->
+      <article class="card card-lines-centered">
+        <header class="card-head">
+          <div class="icon-slot" data-icon="canva"><img src="assets/canva.png" alt="Canva"
+              onerror="this.style.display='none'"></div>
+          <h2>Canva</h2>
+          <p class="lead">ĐĂNG NHẬP ĐƯỢC <b class="blue">MỌI THIẾT BỊ</b></p>
+        </header>
+        <div class="info">
+          <p class="divider"><b class="red">CANVA EDU</b></p>
+          <template data-price-group="canva-1"></template>
+          
+
+          <p class="divider"><b class="red">CANVA PRO</b></p>
+          <p class="note">ADD TEAM</p>
+          <template data-price-group="canva-2"></template>
+          
+          
+
+          <p class="divider"><b class="red">CANVA BUSINESS</b></p>
+          <p class="note">(PRO) - CẤP TÀI KHOẢN ADMIN - ADD TỐI ĐA 100 NGƯỜI/TRONG 1 THÁNG</p>
+          <template data-price-group="canva-3"></template>
+          
+          
+        </div>
+      </article>
+
+      <!-- CAPCUT -->
+      <article class="card">
+        <header class="card-head">
+          <div class="icon-slot" data-icon="capcut"><img src="assets/capcut.png" alt="CapCut"
+              onerror="this.style.display='none'"></div>
+          <h2>CapCut Pro</h2>
+          <p class="lead">CẤP ACC, <b class="blue">DÙNG RIÊNG</b><br>SỬ DỤNG TỐI ĐA 2 THIẾT BỊ</p>
+        </header>
+        <div class="info">
+          <template data-price-group="capcut-pro-1"></template>
+          
+          
+          
+          <p class="note">CHỈ GÓI 6 THÁNG ĐƯỢC THAY ĐỔI THÔNG TIN MAIL</p>
+        </div>
+      </article>
+
+      <!-- DUOLINGO -->
+      <article class="card">
+        <header class="card-head">
+          <div class="icon-slot" data-icon="duolingo"><img src="assets/duolingo.png" alt="Duolingo"
+              onerror="this.style.display='none'"></div>
+          <h2>Super Duolingo</h2>
+          <p class="lead">GÓI <b class="blue">ADD TEAM</b></p>
+          <p class="lead">GÓI CHÍNH CHỦ <b class="blue">IB SỐP</b></p>
+        </header>
+        <div class="info">
+          <template data-price-group="super-duolingo-1"></template>
+          
+          
+          
+        </div>
+      </article>
+
+      <!-- QUIZLET / STUDOCU -->
+      <article class="card">
+        <header class="card-head">
+          <span class="icon-pair">
+            <div class="icon-slot" data-icon="quizlet"><img src="assets/quizlet.png" alt="Quizlet"
+                onerror="this.style.display='none'"></div>
+            <div class="icon-slot" data-icon="studocu"><img src="assets/studocu.png" alt="Studocu"
+                onerror="this.style.display='none'"></div>
+          </span>
+          <h2>Quizlet / Studocu</h2>
+          <p class="lead">GÓI PREMIUM - <b class="blue">NÂNG CHÍNH CHỦ</b></p>
+        </header>
+        <div class="info">
+          <template data-price-group="quizlet-studocu-1"></template>
+          
+        </div>
+      </article>
+
+       <!-- SCRIBD -->
+      <article class="card">
+        <header class="card-head">
+          <span class="icon-pair">
+            <div class="icon-slot" data-icon="scribd"><img src="assets/scribd.png" alt="Studocu"
+                onerror="this.style.display='none'"></div>
+          </span>
+          <h2>SCRIBD</h2>
+          <p class="lead">GÓI PREMIUM - <b class="blue">NÂNG CHÍNH CHỦ</b></p>
+        </header>
+        <div class="info">
+          <template data-price-group="scribd-1"></template>
+          
+        </div>
+      </article>
+
+      <!-- SPOTIFY -->
+      <article class="card card-lines-centered">
+        <header class="card-head">
+          <div class="icon-slot" data-icon="spotify"><img src="assets/spotify.png" alt="Spotify"
+              onerror="this.style.display='none'"></div>
+          <h2>Spotify</h2>
+          <p class="lead">NGHE NHẠC <b class="blue">KHÔNG QUẢNG CÁO</b></p>
+           <p class="lead">GÓI CAO CẤP <b class="blue">XÀI RIÊNG</b></p>
+        </header>
+        <div class="info">
+          <template data-price-group="spotify-1"></template>
+          <p class="note">CHỈ XÁC MINH, KHÔNG CẤP ACC</p>
+          
+          
+          
+        </div>
+      </article>
+
+      <!-- SOUNDCLOUD -->
+      <article class="card card-lines-centered">
+        <header class="card-head">
+          <div class="icon-slot" data-icon="soundcloud"><img src="assets/soundcloud.png" alt="SoundCloud"
+              onerror="this.style.display='none'"></div>
+          <h2>SoundCloud</h2>
+          <p class="lead">BẢN <b class="blue">ARTIST PRO</b> - NÂNG CHÍNH CHỦ</p>
+        </header>
+        <div class="info">
+          <template data-price-group="soundcloud-1"></template>
+          
+        </div>
+      </article>
+
+      <!-- MEITU -->
+      <article class="card card-lines-centered">
+        <header class="card-head">
+          <div class="icon-slot" data-icon="meitu"><img src="assets/meitu.png" alt="Meitu"
+              onerror="this.style.display='none'"></div>
+          <h2>Meitu</h2>
+          <p class="lead">GÓI CAO CẤP <b class="blue">XÀI RIÊNG</b></p>
+        </header>
+        <div class="info">
+          <template data-price-group="meitu-1"></template>
+          
+        </div>
+      </article>
+
+      <!-- VPN -->
+      <article class="card">
+        <header class="card-head">
+          <div class="icon-slot" data-icon="vpn"><img src="assets/vpn.png" alt="VPN"
+              onerror="this.style.display='none'"></div>
+          <h2>Dịch vụ VPN</h2>
+          <p class="lead">SỐP CÓ CUNG CẤP <b class="blue">CÁC LOẠI VPN</b></p>
+        </header>
+        <div class="info">
+          <p class="note"><b class="red">IB ĐỂ BIẾT THÊM CHI TIẾT NHA!</b></p>
+        </div>
+      </article>
+
+    </main>
+  </div>
+
+
+
+
+<noscript>Vui lòng bật JavaScript để xem bảng giá hiện tại.</noscript>
+</body>
+
+</html>
+
