@@ -105,9 +105,6 @@ html,body{
   position:relative;
 }
 .brand-name span{color:#0e5c3f;}
-.access-link{display:block;border:1px solid #ffffff80;border-radius:8px;padding:9px 10px;color:#fff;text-align:center;text-decoration:none;font-weight:700;font-size:13px;background:#0b3a2a90;white-space:nowrap;}
-.access-link:hover{background:#0b3a2a;}
-@media(max-width:860px){.access-link{order:4;grid-column:1/-1;font-size:10px;padding:7px;margin-top:6px;}}
 
 .headline{
   font-family:"Baloo 2",sans-serif;
