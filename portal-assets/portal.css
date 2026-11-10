@@ -17,8 +17,8 @@
 .customer-page .service-icon img{width:26px;height:26px;object-fit:contain}
 .customer-page .action-icon{display:block;width:16px;height:16px;object-fit:contain;flex-shrink:0}
 .customer-page .primary .action-icon{filter:invert(1)}
-.customer-page .topbar{font-size:16px;font-weight:600;letter-spacing:.6px}
-.customer-page #logout{display:inline-flex;align-items:center;gap:6px;font-size:16px}
+.customer-page .topbar{min-height:56px;padding:4px 0;font-size:16px;font-weight:600;letter-spacing:.6px}
+.customer-page #logout{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;min-height:44px;font-size:16px}
 .customer-page #logout .action-icon{width:12px;height:12px}
 @media(max-width:860px){
  .customer-page{-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -30,9 +30,7 @@
  .customer-page .headline{font-family:"Baloo 2","Segoe UI",sans-serif;font-size:clamp(16px,4vw,20px);font-weight:800;line-height:1.2;letter-spacing:0;text-align:right;text-wrap:balance;margin:0}
  .customer-page .side-bottom{display:flex;grid-column:1/-1;justify-content:flex-end;text-align:right}
  .customer-page .side-foot{margin:0;font-size:11px}
- .customer-page .topbar{min-height:76px}
  .customer-page .topbar>span{white-space:nowrap}
- .customer-page #logout{min-height:44px}
  .customer-page .action-icon{width:18px;height:18px}
  .customer-page .muted{font-size:16px;line-height:1.65}
  .customer-page .small,.customer-page .login-note{font-size:14px;line-height:1.7}
