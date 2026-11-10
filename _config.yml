@@ -1,11 +1,3 @@
-# Publish canonical frontend files and shared browser modules, not backend tooling.
+# Publish website files; backend code and deployment tooling stay in the repository.
 exclude:
-  - cloudflare/bot
-  - cloudflare/portal
-  - cloudflare/tests
-  - cloudflare/dist
-  - cloudflare/build.mjs
-  - cloudflare/preview.mjs
-  - cloudflare/deployment.json
-  - cloudflare/README.md
-  - cloudflare/PERFORMANCE.md
+  - cloudflare

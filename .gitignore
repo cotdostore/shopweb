@@ -1,5 +1,4 @@
 cloudflare/dist/
-cloudflare/.test-data/
 *.local
 .env
 .dev.vars

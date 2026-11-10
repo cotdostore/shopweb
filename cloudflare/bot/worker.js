@@ -1,7 +1,7 @@
 import { DurableObject } from "cloudflare:workers";
 import {handlePortal, portalCommand, cleanupPortal} from '../portal/index.mjs';
 import {parseAdminCommand} from './commands.mjs';
-import {validatePriceData,priceDisplay} from '../shared/prices-core.mjs';
+import {validatePriceData,priceDisplay} from '../../prices-core.js';
 
 // One durable inbox per customer: message IDs, timers and session guards share
 // the same strongly consistent storage across webhook requests and restarts.
