@@ -25,7 +25,7 @@
  .customer-page .brand{gap:7px}
  .customer-page .brand-logo{width:36px;height:36px}
  .customer-page .brand-name{font-size:15px;line-height:1.1}
- .customer-page .headline{font-family:"Baloo 2","Segoe UI",sans-serif;font-size:clamp(16px,4vw,20px);font-weight:800;line-height:1.2;letter-spacing:0;text-align:right;margin:0}
+ .customer-page .headline{font-family:"Baloo 2","Segoe UI",sans-serif;font-size:clamp(16px,4vw,20px);font-weight:800;line-height:1.2;letter-spacing:0;text-align:right;text-wrap:balance;margin:0}
  .customer-page .side-bottom{display:flex;grid-column:1/-1;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #ffffff40;padding-top:8px;font-size:12px;text-align:left}
  .customer-page .side-bottom>span:first-child{color:#0b3a2a}
  .customer-page .side-bottom .status-dot{background:#1e6b4b}
