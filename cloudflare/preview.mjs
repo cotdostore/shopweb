@@ -1,13 +1,18 @@
 import http from 'node:http';
-import assets from './portal/assets.mjs';
 import {readFileSync} from 'node:fs';
-const customer={};
-for(const [route,file,type] of [['/chatgpt','index.html','text/html; charset=utf-8'],['/chatgpt/customer.js','customer.js','text/javascript; charset=utf-8'],['/chatgpt/portal.css','portal.css','text/css; charset=utf-8']])customer[route]={body:readFileSync(new URL('../chatgpt/'+file,import.meta.url),'utf8'),type};
-const server=http.createServer((req,res)=>{
- const path=new URL(req.url,'http://localhost').pathname.replace(/\/$/,'');
- const asset=customer[path]??assets[path];
- if(asset){res.writeHead(200,{'Content-Type':asset.type});return res.end(asset.body);}
- if(req.url.startsWith('/portal/api/')){res.writeHead(401,{'Content-Type':'application/json'});return res.end(JSON.stringify({error:'Đăng nhập tại bản Cloudflare sau khi triển khai.'}));}
- res.writeHead(404);res.end('Not Found');
-});
-server.listen(4173,'127.0.0.1',()=>console.log('Local preview: http://127.0.0.1:4173/chatgpt'));
+const assets=new Map();
+for(const [route,file,type] of [
+ ['/chatgpt','chatgpt/index.html','text/html'],
+ ['/chatgpt/customer.js','chatgpt/customer.js','text/javascript'],
+ ['/admin','admin/index.html','text/html'],
+ ['/admin/admin.js','admin/admin.js','text/javascript'],
+ ['/portal-assets/portal.css','portal-assets/portal.css','text/css'],
+ ['/portal-assets/duration.mjs','portal-assets/duration.mjs','text/javascript'],
+ ['/portal-assets/Code.gs','portal-assets/Code.gs','text/plain'],
+ ['/portal-assets/appsscript.json','portal-assets/appsscript.json','application/json']
+])assets.set(route,{body:readFileSync(new URL('../'+file,import.meta.url),'utf8'),type});
+http.createServer((req,res)=>{
+ const asset=assets.get(new URL(req.url,'http://localhost').pathname.replace(/\/$/,''));
+ if(!asset){res.writeHead(404);return res.end('Not Found');}
+ res.writeHead(200,{'Content-Type':asset.type+'; charset=utf-8'});res.end(asset.body);
+}).listen(4173,'127.0.0.1',()=>console.log('Static preview: http://127.0.0.1:4173/admin/'));

@@ -3,7 +3,7 @@
 Nguồn bot Messenger đang chạy được đưa vào `bot/worker.js`, sau đó mở rộng thêm module `portal/`. Phần bảng giá và các lệnh bot hiện có được giữ nguyên.
 
 - Khách: https://cotdostore.github.io/shopweb/chatgpt/
-- Quản trị: https://cotdo-messenger-bot.kazuto121100.workers.dev/portal/admin
+- Quản trị: https://cotdostore.github.io/shopweb/admin/
 - Trang khách GitHub Pages: `chatgpt/index.html`, `chatgpt/customer.js`, `chatgpt/portal.css`. Đây là trang thật, không chuyển hướng sang Worker.
 
 ## Lệnh Messenger
@@ -25,13 +25,15 @@ Hết hạn chỉ thu hồi quyền xem thông tin trên cổng này. Hệ thố
 
 ## Truy cập và dữ liệu
 
-Khách chỉ nhập một ID, theo yêu cầu của shop. ID được chuẩn hóa chữ thường; tối thiểu 6 ký tự. Đây cũng là mật khẩu truy cập, nên không công khai ID. Server lưu mã HMAC để tra cứu và bản mã AES-GCM để admin gửi lại; không có danh sách ID công khai. API đăng nhập giới hạn 20 lần/10 phút/IP. Phiên khách có cookie Secure/HttpOnly/SameSite, tồn tại 12 giờ. Mọi lần lấy thông tin đều kiểm tra quyền và hạn dùng trên server. Giao diện kiểm tra lại mỗi 15 giây khi mở và xóa thông tin khi ẩn trang hoặc lỗi xác minh quyền.
+Khách chỉ nhập một ID, theo yêu cầu của shop. ID được chuẩn hóa chữ thường; tối thiểu 6 ký tự. Đây cũng là mật khẩu truy cập, nên không công khai ID. Server lưu mã HMAC để tra cứu và bản mã AES-GCM để admin gửi lại; không có danh sách ID công khai. API đăng nhập giới hạn 20 lần/10 phút/IP. Phiên khách tồn tại tối đa 12 giờ. Mọi lần lấy thông tin đều kiểm tra quyền và hạn dùng trên server. Giao diện kiểm tra lại mỗi 15 giây khi mở và xóa thông tin khi ẩn trang hoặc lỗi xác minh quyền.
 
-Trang GitHub Pages dùng phiên bearer chỉ giữ trong bộ nhớ tab, không lưu ID, mật khẩu hay token vào localStorage/sessionStorage. Tải lại trang cần nhập lại ID. API chỉ cho origin `https://cotdostore.github.io` gọi các endpoint khách; endpoint quản trị vẫn yêu cầu cùng origin Worker và phiên admin. CORS không mở wildcard và không dùng cookie bên thứ ba. Link bot gửi khách và nút truy cập trên bảng giá đều trỏ về trang GitHub Pages.
+Cả trang khách và admin dùng GitHub Pages. Phiên bearer chỉ giữ trong bộ nhớ tab; không lưu ID, mật khẩu hay token vào localStorage/sessionStorage. Tải lại trang cần đăng nhập lại. API chỉ cho origin `https://cotdostore.github.io` và các request cùng origin Worker truy cập; mọi thao tác quản trị vẫn phải có phiên role admin riêng. Token khách không thể gọi chức năng quản trị. CORS không mở wildcard và không dùng cookie bên thứ ba. Trình duyệt có thể tái sử dụng kết quả preflight trong 600 giây; dữ liệu API luôn no-store.
 
 Tài khoản, mật khẩu và URL 2FA được mã hóa AES-GCM bằng secret `PORTAL_KEY` của Worker, không lưu trong mã nguồn hoặc GitHub Pages. `PORTAL_DB` là D1 riêng. Đổi khóa cần di chuyển lại dữ liệu mã hóa; không ghi đè khóa khi triển khai lại.
 
 Trang quản trị xác minh token GitHub có quyền admin repo `cotdostore/shopweb`, không lưu token. Phiên admin 2 giờ. Có thể cấp link khởi tạo admin một lần qua hash URL, hết hạn sau 24 giờ; token chỉ lưu dạng hash trong D1. Không gửi link khởi tạo cho khách. Link không được tạo bởi API công khai.
+
+Nút **Xóa ID** trong danh sách khách yêu cầu xác nhận trước khi xóa vĩnh viễn khách, toàn bộ quyền dịch vụ và phiên đăng nhập của ID đó trong một transaction. Tài khoản dịch vụ dùng chung và các khách khác vẫn giữ nguyên. Sau khi xóa có thể tạo lại ID, nhưng cần cấp quyền mới; phiên cũ không được phục hồi.
 
 ## Google Docs → Cloudflare
 
@@ -57,13 +59,13 @@ Yêu cầu Node 18+ và Python 3 (chỉ phục vụ test SQLite, không dùng tr
 
 ```powershell
 node cloudflare/build.mjs
-node --test cloudflare/tests/bot.test.mjs cloudflare/tests/customer.test.mjs cloudflare/tests/portal.test.mjs
+node --test cloudflare/tests/admin.test.mjs cloudflare/tests/bot.test.mjs cloudflare/tests/customer.test.mjs cloudflare/tests/portal.test.mjs
 node cloudflare/preview.mjs
 ```
 
-Build tạo `portal/assets.mjs` và `dist/modules.json` (được ignore). `preview.mjs` chỉ phục vụ kiểm tra giao diện; đăng nhập/API phải dùng Worker có D1 thật.
+Build xuất `chatgpt/`, `admin/` và thư mục `portal-assets/` dùng chung CSS, duration và file tải xuống cho Apps Script. Source giao diện chỉ sửa tại `portal/web/`, sau đó chạy build để cập nhật các file GitHub Pages. `_config.yml` loại source backend/giao diện gốc khỏi tài sản Pages; module giá dùng chung vẫn được xuất. Worker chỉ đóng gói 7 module backend trong `dist/modules.json` (được ignore), không chứa HTML/CSS/JS giao diện. `preview.mjs` chỉ kiểm tra bố cục; xác thực thực tế chạy trên GitHub Pages và Worker.
 
-Trang khách chỉ được triển khai trên GitHub Pages. Worker không còn phục vụ `/chatgpt`, `/chatgpt/access` hay JS trang khách; các URL đó trả 404. Source `portal/web/customer.*` dùng để build trang GitHub, không được đóng gói vào Worker. Trang quản trị `/portal/admin`, API, webhook và đồng bộ Docs vẫn nằm trên Worker. Nút Trang khách trong quản trị trỏ về GitHub Pages.
+Worker giữ API, webhook Messenger và đồng bộ Docs. `/portal/admin` cũ chỉ chuyển sang trang admin GitHub; không chứa giao diện riêng. Các URL `/chatgpt`, `/chatgpt/access` và `/portal/assets/*` cũ trả 404. CSS không còn được sao chép riêng cho trang khách. Trang admin chưa đăng nhập không gọi API; đăng nhập vẫn xác minh quyền admin repo tại GitHub.
 
 Chi tiết tối ưu, cách đo và giới hạn cache: [PERFORMANCE.md](PERFORMANCE.md).
 

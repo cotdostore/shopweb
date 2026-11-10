@@ -72,6 +72,48 @@ test('one ID login, SQL-enforced duplicates, isolated grants, block and expiry',
   const row=await env.PORTAL_DB.prepare('SELECT * FROM portal_customers WHERE id=?').bind(customer.id).first();assert(!row.access_encrypted.includes('linhhuynh01'));assert(!row.access_hash.includes('linhhuynh01'));
  }finally{dispose();}
 });
+test('admin customer deletion revokes sessions and grants atomically, preserves shared accounts, and frees the ID',async()=>{
+ const {env,stats,dispose}=database();try{
+  const account=await seedAccount(env);
+  const target=await createCustomer(env,'deleteuser01','Delete test','delete-psid');
+  const kept=await createCustomer(env,'keptuser01','Keep test','keep-psid');
+  await portalCommand('cap','deleteuser01 gpt 3month','delete-psid',env);
+  await portalCommand('cap','keptuser01 gpt 3month','keep-psid',env);
+  const first=await call(env,'/login','POST',{accessId:'deleteuser01'});
+  const second=await call(env,'/login','POST',{accessId:'deleteuser01'});
+  const keptLogin=await call(env,'/login','POST',{accessId:'keptuser01'});
+  const token='delete-id-admin-bootstrap';
+  await env.PORTAL_DB.prepare('INSERT INTO portal_config(key,value) VALUES(?,?)').bind('bootstrap:'+await digest(token),String(Date.now()+60000)).run();
+  const admin=await call(env,'/admin/bootstrap','POST',{token});
+  assert.equal((await call(env,'/admin/customer','DELETE',{id:target.id})).status,401);
+  assert.equal((await call(env,'/admin/customer','DELETE',{id:target.id},first.cookie)).status,401);
+  const evil=request('/admin/customer','DELETE',{id:target.id},admin.cookie);evil.headers.set('Origin','https://evil.invalid');assert.equal((await handlePortal(evil,env)).status,403);
+  const github=request('/admin/customer','DELETE',{id:target.id},admin.cookie);github.headers.set('Origin','https://cotdostore.github.io');assert.equal((await handlePortal(github,env)).status,401);
+  assert.equal((await call(env,'/admin/customer','DELETE',{id:''},admin.cookie)).status,400);
+  // Exercise rollback after the two dependent DELETE statements have executed.
+  await env.PORTAL_DB.prepare("CREATE TRIGGER reject_customer_delete BEFORE DELETE ON portal_customers BEGIN SELECT RAISE(ABORT,'synthetic failure'); END").run();
+  assert.equal((await call(env,'/admin/customer','DELETE',{id:target.id},admin.cookie)).status,500);
+  assert.equal((await call(env,'/snapshot','GET',undefined,first.cookie)).data.details.id,account);
+  assert.equal((await env.PORTAL_DB.prepare('SELECT COUNT(*) AS count FROM portal_sessions WHERE customer_id=?').bind(target.id).first()).count,2);
+  await env.PORTAL_DB.prepare('DROP TRIGGER reject_customer_delete').run();
+  const before=stats.roundTrips;
+  assert.equal((await call(env,'/admin/customer','DELETE',{id:target.id},admin.cookie)).status,200);
+  assert.equal(stats.roundTrips-before,2,'admin authentication plus one transaction batch');
+  assert.equal(await env.PORTAL_DB.prepare('SELECT id FROM portal_customers WHERE id=?').bind(target.id).first(),null);
+  assert.equal((await env.PORTAL_DB.prepare('SELECT COUNT(*) AS count FROM portal_grants WHERE customer_id=?').bind(target.id).first()).count,0);
+  assert.equal((await env.PORTAL_DB.prepare('SELECT COUNT(*) AS count FROM portal_sessions WHERE customer_id=?').bind(target.id).first()).count,0);
+  for(const cookie of [first.cookie,second.cookie])assert.equal((await call(env,'/snapshot','GET',undefined,cookie)).status,401);
+  assert.equal((await call(env,'/login','POST',{accessId:'deleteuser01'})).status,401);
+  assert.equal((await call(env,'/snapshot','GET',undefined,keptLogin.cookie)).data.details.id,account);
+  const state=(await call(env,'/admin/state','GET',undefined,admin.cookie)).data;
+  assert.equal(state.customers.length,1);assert.equal(state.customers[0].id,kept.id);assert.equal(state.accounts[0].id,account);
+  assert.equal((await call(env,'/admin/customer','DELETE',{id:target.id},admin.cookie)).status,404);
+  const replacement=await createCustomer(env,'deleteuser01','New customer','delete-psid');assert.notEqual(replacement.id,target.id);
+  const replacementLogin=await call(env,'/login','POST',{accessId:'deleteuser01'});
+  assert.deepEqual((await call(env,'/snapshot','GET',undefined,replacementLogin.cookie)).data.accounts,[]);
+  assert.equal((await call(env,'/snapshot','GET',undefined,first.cookie)).status,401);
+ }finally{dispose();}
+});
 test('sync is authorized, ordered, rejects invalid data and recovers without leaking secrets',async()=>{
  const {env,dispose}=database();try{
   await seedAccount(env);const observed=Date.now()+1;
@@ -154,8 +196,8 @@ test('GitHub Pages customer login uses scoped CORS and an in-memory bearer sessi
   const preflight=await handlePortal(githubRequest('/login','OPTIONS'),env);assert.equal(preflight.status,204);assert.equal(preflight.headers.get('Access-Control-Allow-Origin'),github);assert(!preflight.headers.has('Access-Control-Allow-Credentials'));
   const login=await handlePortal(githubRequest('/login','POST',{accessId:'githubuser01'}),env);assert.equal(login.status,200);assert.equal(login.headers.get('Access-Control-Allow-Origin'),github);assert(!login.headers.has('Set-Cookie'));const {token}=await login.json();assert.match(token,/^[A-Za-z0-9_-]{43}$/);
   const detail=await handlePortal(githubRequest('/account/'+account,'GET',undefined,token),env);assert.equal(detail.status,200);assert.equal((await detail.json()).password,'synthetic-password');
-  assert.equal((await handlePortal(githubRequest('/admin/state','GET',undefined,token),env)).status,403);
-  assert.equal((await handlePortal(githubRequest('/admin/bootstrap','POST',{token}),env)).status,403);
+  assert.equal((await handlePortal(githubRequest('/admin/state','GET',undefined,token),env)).status,401);
+  assert.equal((await handlePortal(githubRequest('/admin/bootstrap','POST',{token}),env)).status,401);
   assert.equal((await handlePortal(githubRequest('/me'),env)).status,401);
   const evil=githubRequest('/me','GET',undefined,token);evil.headers.set('Origin','https://evil.invalid');const rejected=await handlePortal(evil,env);assert.equal(rejected.status,403);assert(!rejected.headers.has('Access-Control-Allow-Origin'));
   await handlePortal(githubRequest('/logout','POST',{},token),env);assert.equal((await handlePortal(githubRequest('/me','GET',undefined,token),env)).status,401);
@@ -221,4 +263,34 @@ test('admin state batches reads and grants are validated atomically',async()=>{
   await env.PORTAL_DB.prepare('UPDATE portal_accounts SET active=0 WHERE id=?').bind(account).run();
   assert.equal((await call(env,'/admin/grant','POST',{customerId:customer.id,accountId:account,duration:'3month'},admin.cookie)).status,400);
  }finally{dispose();}
+});
+test('GitHub admin uses a separate in-memory bearer role, supports deletion, and preserves bootstrap/logout boundaries',async()=>{
+ const {env,dispose}=database();const oldFetch=globalThis.fetch;
+ const gh=(route,method='GET',data,token)=>{const req=request(route,method,data);req.headers.set('Origin','https://cotdostore.github.io');if(token)req.headers.set('Authorization','Bearer '+token);return req;};
+ try{
+  const user=await createCustomer(env,'githubadmin01','Test admin boundary','gh-admin-psid');
+  const customerToken=(await (await handlePortal(gh('/login','POST',{accessId:'githubadmin01'}),env)).json()).token;
+  const preflight=await handlePortal(gh('/admin/customer','OPTIONS'),env);assert.equal(preflight.status,204);assert.match(preflight.headers.get('Access-Control-Allow-Methods'),/DELETE/);assert(!preflight.headers.has('Access-Control-Allow-Credentials'));
+  globalThis.fetch=async url=>{assert.equal(url,'https://api.github.com/repos/cotdostore/shopweb');return Response.json({permissions:{admin:true}});};
+  const adminResponse=await handlePortal(gh('/admin/login','POST',{token:'synthetic-github-admin-token'}),env);
+  assert.equal(adminResponse.status,200);assert(!adminResponse.headers.has('Set-Cookie'));assert.equal(adminResponse.headers.get('Access-Control-Allow-Origin'),'https://cotdostore.github.io');
+  const adminToken=(await adminResponse.json()).token;assert.match(adminToken,/^[A-Za-z0-9_-]{43}$/);
+  assert.equal((await handlePortal(gh('/admin/state','GET',undefined,adminToken),env)).status,200);
+  assert.equal((await handlePortal(gh('/admin/state','GET',undefined,customerToken),env)).status,401);
+  assert.equal((await handlePortal(gh('/snapshot','GET',undefined,adminToken),env)).status,401);
+  assert.equal((await handlePortal(gh('/admin/customer','DELETE',{id:user.id},customerToken),env)).status,401);
+  await handlePortal(gh('/logout','POST',{admin:true},customerToken),env);
+  assert.equal((await handlePortal(gh('/admin/state','GET',undefined,adminToken),env)).status,200,'customer logout cannot revoke an admin session');
+  assert.equal((await handlePortal(gh('/snapshot','GET',undefined,customerToken),env)).status,200,'wrong-role logout does not revoke the customer session either');
+  assert.equal((await handlePortal(gh('/admin/customer','DELETE',{id:user.id},adminToken),env)).status,200);
+  assert.equal((await handlePortal(gh('/snapshot','GET',undefined,customerToken),env)).status,401);
+  const evil=gh('/admin/state','GET',undefined,adminToken);evil.headers.set('Origin','https://evil.invalid');assert.equal((await handlePortal(evil,env)).status,403);
+  await handlePortal(gh('/logout','POST',{admin:true},adminToken),env);
+  assert.equal((await handlePortal(gh('/admin/state','GET',undefined,adminToken),env)).status,401);
+  const setup='synthetic-github-setup-token';
+  await env.PORTAL_DB.prepare('INSERT INTO portal_config(key,value) VALUES(?,?)').bind('bootstrap:'+await digest(setup),String(Date.now()+60000)).run();
+  const bootstrap=await handlePortal(gh('/admin/bootstrap','POST',{token:setup}),env);assert.equal(bootstrap.status,200);assert(!bootstrap.headers.has('Set-Cookie'));
+  const setupToken=(await bootstrap.json()).token;assert.equal((await handlePortal(gh('/admin/state','GET',undefined,setupToken),env)).status,200);
+  assert.equal((await handlePortal(gh('/admin/bootstrap','POST',{token:setup}),env)).status,401);
+ }finally{globalThis.fetch=oldFetch;dispose();}
 });

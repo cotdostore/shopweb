@@ -1,4 +1,3 @@
-import assets from './assets.mjs';
 import {digest,accessHash,seal,unseal,randomToken} from './crypto.mjs';
 import {normalizeId,parseCredentials,safeUrl} from './parser.mjs';
 import {grantExpiry} from './duration.mjs';
@@ -6,6 +5,7 @@ import {grantExpiry} from './duration.mjs';
 const API='/portal/api', HOUR=3600000;
 const GITHUB_ORIGIN='https://cotdostore.github.io';
 const CUSTOMER_URL=GITHUB_ORIGIN+'/shopweb/chatgpt/';
+const ADMIN_URL=GITHUB_ORIGIN+'/shopweb/admin/';
 const customerCookie='__Host-cotdo_customer', adminCookie='__Host-cotdo_admin';
 const headers={
  'Cache-Control':'no-store, private', 'X-Content-Type-Options':'nosniff',
@@ -43,7 +43,7 @@ async function adminSession(request,env) {
  return row;
 }
 function sessionToken(request,role) {
- if(role==='customer'&&request.headers.get('Origin')===GITHUB_ORIGIN) {
+ if(request.headers.get('Origin')===GITHUB_ORIGIN) {
   const auth=request.headers.get('Authorization')??'';
   return /^Bearer [A-Za-z0-9_-]{43}$/.test(auth)?auth.slice(7):null;
  }
@@ -55,6 +55,10 @@ async function newSession(env,role,id=null,bearer=false) {
  await query(env,'INSERT INTO portal_sessions(token_hash,customer_id,role,expires_at) VALUES(?,?,?,?)',await digest(token),id,role,now()+ttl).run();
  return bearer?token:cookie(role==='admin'?adminCookie:customerCookie,token,ttl/1000);
 }
+async function sessionReply(request,env,role,id=null) {
+ if(request.headers.get('Origin')===GITHUB_ORIGIN)return reply({ok:true,token:await newSession(env,role,id,true)});
+ return reply({ok:true},200,{'Set-Cookie':await newSession(env,role,id)});
+}
 async function adminLogin(request,env) {
  await limit(env,'admin:'+request.headers.get('CF-Connecting-IP'),10);
  const data=await body(request,2000),token=data.token;
@@ -64,7 +68,7 @@ async function adminLogin(request,env) {
  if(!response.ok)throw new Problem('GitHub từ chối token hoặc token chưa có quyền đọc repo.',403);
  const repo=await body(response,50000);
  if(!repo.permissions?.admin)throw new Problem('Cần token có quyền quản trị repo cotdostore/shopweb.',403);
- return reply({ok:true},200,{'Set-Cookie':await newSession(env,'admin')});
+ return sessionReply(request,env,'admin');
 }
 export async function createCustomer(env,rawId,displayName='',messengerId=null) {
  const accessId=normalizeId(rawId),hash=await accessHash(accessId,env.PORTAL_KEY);
@@ -140,6 +144,16 @@ async function adminRoute(request,env,path) {
  }
  const data=await body(request);
  if(path==='/admin/customers'&&request.method==='POST')return reply(await createCustomer(env,data.accessId,data.name),201);
+ if(path==='/admin/customer'&&request.method==='DELETE') {
+  if(typeof data.id!=='string'||!data.id.trim()||data.id.length>100)throw new Problem('Thiếu ID khách cần xóa.');
+  // One transaction: remove dependent records before the customer, preserving service accounts.
+  const results=await env.PORTAL_DB.batch([
+   query(env,'DELETE FROM portal_grants WHERE customer_id=?',data.id),
+   query(env,'DELETE FROM portal_sessions WHERE customer_id=?',data.id),
+   query(env,'DELETE FROM portal_customers WHERE id=? RETURNING id',data.id)]);
+  if(!results[2].results.length)throw new Problem('Không tìm thấy khách.',404);
+  return reply({ok:true});
+ }
  if(path==='/admin/customer'&&request.method==='PUT') {
   if(typeof data.active!=='boolean'||typeof data.id!=='string')throw new Problem('Thiếu ID/trạng thái khách.');
   const result=await query(env,'UPDATE portal_customers SET active=? WHERE id=? RETURNING id',Number(data.active),data.id).first();
@@ -192,14 +206,15 @@ async function adminRoute(request,env,path) {
  throw new Problem('Không tìm thấy API.',404);
 }
 const customerApi=route=>['/login','/logout','/me','/snapshot'].includes(route)||route.startsWith('/account/');
+const githubApi=route=>customerApi(route)||['/admin/login','/admin/bootstrap','/admin/state','/admin/customers','/admin/customer','/admin/grant','/admin/account','/admin/sync-token'].includes(route);
 export async function handlePortal(request,env) {
  const url=new URL(request.url),origin=request.headers.get('Origin');
  // The Apps Script integration authenticates with its own sync token.
  if(url.pathname===API+'/sync')return routePortal(request,env);
  if(url.pathname.startsWith(API+'/')&&origin&&origin!==url.origin) {
   const route=url.pathname.slice(API.length);
-  if(origin!==GITHUB_ORIGIN||!customerApi(route))return reply({error:'Nguồn truy cập không được phép.'},403);
-  const cors={'Access-Control-Allow-Origin':GITHUB_ORIGIN,'Access-Control-Allow-Methods':'GET, POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Authorization','Vary':'Origin'};
+  if(origin!==GITHUB_ORIGIN||!githubApi(route))return reply({error:'Nguồn truy cập không được phép.'},403);
+  const cors={'Access-Control-Allow-Origin':GITHUB_ORIGIN,'Access-Control-Allow-Methods':'GET, POST, PUT, DELETE, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Authorization','Vary':'Origin'};
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:{...headers,...cors,'Access-Control-Max-Age':'600'}});
   const response=await routePortal(request,env);
   return new Response(response.body,{status:response.status,headers:{...Object.fromEntries(response.headers),...cors}});
@@ -208,18 +223,13 @@ export async function handlePortal(request,env) {
 }
 async function routePortal(request,env) {
  const url=new URL(request.url),path=url.pathname;
- if(!/^\/portal(?:\/|$)/.test(path))return null;
+ if(path.replace(/\/$/,'')==='/portal/admin'&&request.method==='GET')return new Response(null,{status:302,headers:{...headers,Location:ADMIN_URL+url.search}});
+ if(!path.startsWith(API+'/'))return null;
  if(!env.PORTAL_DB||!env.PORTAL_KEY)return reply({error:'Cổng dịch vụ chưa được cấu hình.'},503);
  try {
-  if(request.method==='GET') {
-   const assetPath=path.replace(/\/$/,'');
-   const asset=assets[assetPath];
-   if(asset)return new Response(asset.body,{headers:{...headers,'Content-Type':asset.type}});
-  }
-  if(!path.startsWith(API+'/'))throw new Problem('Không tìm thấy trang.',404);
   const route=path.slice(API.length);
   if(route==='/sync'&&request.method==='POST')return await sync(request,env);
-  const github=request.headers.get('Origin')===GITHUB_ORIGIN&&customerApi(route);
+  const github=request.headers.get('Origin')===GITHUB_ORIGIN&&githubApi(route);
   if(!['GET','HEAD'].includes(request.method)&&request.headers.get('Origin')!==url.origin&&!github)throw new Problem('Nguồn truy cập không được phép.',403);
   if(route==='/login'&&request.method==='POST') {
    await limit(env,'login:'+request.headers.get('CF-Connecting-IP'));
@@ -228,8 +238,7 @@ async function routePortal(request,env) {
    // No endpoint exposes customer ID existence to unauthenticated visitors.
    const user=await getCustomer(env,id);
    if(!user?.active)throw new Problem('ID không đúng hoặc đã bị khóa.',401);
-   if(github)return reply({ok:true,token:await newSession(env,'customer',user.id,true)});
-   return reply({ok:true},200,{'Set-Cookie':await newSession(env,'customer',user.id)});
+   return sessionReply(request,env,'customer',user.id);
   }
  if(route==='/admin/login'&&request.method==='POST')return await adminLogin(request,env);
  if(route==='/admin/bootstrap'&&request.method==='POST') {
@@ -239,11 +248,10 @@ async function routePortal(request,env) {
   const key='bootstrap:'+await digest(data.token);
   const result=await query(env,'DELETE FROM portal_config WHERE key=? AND CAST(value AS INTEGER)>? RETURNING key',key,now()).first();
   if(!result)throw new Problem('Link quản trị đã dùng hoặc hết hạn. Dùng token GitHub để kết nối lại.',401);
-  return reply({ok:true},200,{'Set-Cookie':await newSession(env,'admin')});
+  return sessionReply(request,env,'admin');
  }
   if(route==='/logout'&&request.method==='POST') {
    const data=await body(request,1000),role=data.admin?'admin':'customer',name=data.admin?adminCookie:customerCookie;
-   if(github&&data.admin)throw new Problem('Nguồn truy cập không được phép.',403);
    const token=sessionToken(request,role);
    if(token)await query(env,'DELETE FROM portal_sessions WHERE token_hash=? AND role=?',await digest(token),role).run();
    return github?reply({ok:true}):reply({ok:true},200,{'Set-Cookie':cookie(name,'',0)});

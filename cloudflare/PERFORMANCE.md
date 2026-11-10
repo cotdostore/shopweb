@@ -1,5 +1,9 @@
 # Performance audit — 2026-11-09
 
+Current hosting: both customer and admin UIs are built to GitHub Pages. Worker serves API/bot/sync only; its old admin URL redirects to GitHub and its old UI asset routes return 404. The previous shipped Worker contained 8 modules totaling 155,860 UTF-8 bytes; the new backend bundle has 7 modules at approximately 122 KB, about 22% less uncompressed source. This is a bundle-size reduction, not a measured claim about request latency. Customer and admin share one CSS asset; a tiny CSS import at the old customer path supports cached HTML without duplicating the stylesheet. Backend/source UI folders are excluded from Pages publication while the shared pricing module stays available.
+
+The admin page makes zero API requests before login, uses a separate bearer role stored only in tab memory, and reuses CORS preflight permission for 600 seconds. Customer tokens cannot authorize admin operations. Creating a Docs sync token does not replace the admin session token. Deleting a customer uses one D1 transaction batch after authentication, removing grants and sessions before the ID; a rollback test verifies failures cannot leave partially deleted access. Existing cookies remain supported by the API for older open pages; new GitHub pages use credentials: omit.
+
 Scope: the existing GitHub Pages store, customer portal, price administration and Cloudflare Messenger Worker. Baseline: Git revision `be2f0ce`. Public customer UI lives only on GitHub Pages; Cloudflare hosts backend APIs and admin tools.
 
 | Hot path | Before | After |
@@ -26,7 +30,7 @@ New indexes cover customer-session revocation, service lookup and expired rate-l
 
 ```powershell
 node cloudflare/build.mjs
-node --test cloudflare/tests/bot.test.mjs cloudflare/tests/customer.test.mjs cloudflare/tests/portal.test.mjs
+node --test cloudflare/tests/admin.test.mjs cloudflare/tests/bot.test.mjs cloudflare/tests/customer.test.mjs cloudflare/tests/portal.test.mjs
 node cloudflare/tests/performance-check.mjs
 ```
 

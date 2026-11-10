@@ -1,9 +1,11 @@
-import {grantExpiry} from '/portal/assets/duration.mjs';
-const $=id=>document.getElementById(id);let state=null;
+import {grantExpiry} from '../portal-assets/duration.mjs';
+const $=id=>document.getElementById(id);let state=null,accessToken=null,generation=0,loadVersion=0;
+const remoteApi=document.querySelector('meta[name="portal-api"]').content;
 const formatter=new Intl.DateTimeFormat('vi-VN',{dateStyle:'short',timeStyle:'short',timeZone:'Asia/Ho_Chi_Minh'});
 const date=value=>value?formatter.format(value):'—';
 function notice(text,error=false){$('status').textContent=text;$('status').classList.toggle('error',error);$('status').hidden=!text;}
-async function api(path,method='GET',data){const response=await fetch('/portal/api'+path,{method,cache:'no-store',credentials:'same-origin',headers:data?{'Content-Type':'application/json'}:{},body:data?JSON.stringify(data):undefined});const result=await response.json();if(!response.ok){const error=new Error(result.error||'Kết nối lỗi.');error.status=response.status;throw error;}return result;}
+function loggedOut(){generation++;accessToken=null;state=null;$('admin').hidden=true;$('login').hidden=false;$('logout').hidden=true;$('sync-config').textContent='';$('sync-config').hidden=true;$('account-form').reset();$('customers').replaceChildren();$('accounts').replaceChildren();}
+async function api(path,method='GET',data){const response=await fetch(remoteApi+path,{method,cache:'no-store',credentials:'omit',signal:AbortSignal.timeout(15000),headers:{...(data?{'Content-Type':'application/json'}:{}),...(accessToken?{Authorization:'Bearer '+accessToken}:{})},body:data?JSON.stringify(data):undefined});const result=await response.json();if(!response.ok){if(response.status===401&&accessToken)loggedOut();const error=new Error(result.error||'Kết nối lỗi.');error.status=response.status;throw error;}if(path==='/admin/login'||path==='/admin/bootstrap')accessToken=result.token;return result;}
 async function action(fn){try{await fn();}catch(error){notice(error.message,true);}}
 function node(tag,text,cls){const n=document.createElement(tag);if(text!=null)n.textContent=text;if(cls)n.className=cls;return n;}
 function button(text,fn,cls='secondary'){const el=node('button',text,cls);el.type='button';el.addEventListener('click',()=>action(async()=>{el.disabled=true;try{await fn();}finally{el.disabled=false;}}));return el;}
@@ -27,6 +29,10 @@ function render(){
   }if(!list.childNodes.length)list.textContent='Chưa cấp dịch vụ';row.append(list);
   const tools=node('td'),wrap=node('div',null,'table-actions');
   wrap.append(button(user.active?'Khóa':'Mở lại',async()=>{await api('/admin/customer','PUT',{id:user.id,active:!user.active});await load();notice(user.active?'Đã khóa ID và hủy phiên truy cập.':'Đã mở lại ID. Hạn dùng dịch vụ giữ nguyên.');},user.active?'secondary danger':'secondary'));
+  wrap.append(button('Xóa ID',async()=>{
+   if(!confirm('Xóa vĩnh viễn ID "'+user.accessId+'"? Các quyền dịch vụ và phiên đăng nhập của ID này cũng sẽ bị xóa.'))return;
+   await api('/admin/customer','DELETE',{id:user.id});await load();notice('Đã xóa ID '+user.accessId+', thu hồi quyền và hủy phiên đăng nhập.');
+  },'secondary danger'));
   wrap.append(button('Chép tin nhắn',async()=>{await navigator.clipboard.writeText('ID truy cập của bạn: '+user.accessId+'\nhttps://cotdostore.github.io/shopweb/chatgpt/\nNhập ID để xem dịch vụ đã được cấp và thông tin mới nhất.');notice('Đã chép tin nhắn để gửi khách.');}));tools.append(wrap);row.append(tools);$('customers').append(row);
  }
  $('accounts').replaceChildren();
@@ -37,7 +43,7 @@ function render(){
   const edit=node('td');edit.append(button('Chỉnh sửa',()=>openAccount(account)));row.append(edit);$('accounts').append(row);
  }
 }
-async function load(){state=await api('/admin/state');$('login').hidden=true;$('admin').hidden=false;$('logout').hidden=false;render();}
+async function load(){const version=generation,request=++loadVersion,data=await api('/admin/state');if(version!==generation||request!==loadVersion)return;state=data;$('login').hidden=true;$('admin').hidden=false;$('logout').hidden=false;render();}
 function openAccount(account){$('account-form').reset();$('account-form').hidden=false;$('manual-fields').hidden=true;$('account-id').value=account?.id??'';$('account-service').value=account?.service??'chatgpt';$('account-label').value=account?.label??'';$('account-source').value=account?.source_id??'';$('account-active').checked=account?!!account.active:true;$('account-form-title').textContent=account?'Chỉnh sửa tài khoản':'Thêm tài khoản';$('account-form').scrollIntoView({behavior:'smooth'});}
 $('admin-login').addEventListener('submit',event=>{event.preventDefault();const submit=event.submitter;action(async()=>{submit.disabled=true;try{await api('/admin/login','POST',{token:$('github-token').value.trim()});$('github-token').value='';await load();notice('Đã kết nối quản trị.');}finally{submit.disabled=false;}});});
 $('customer-form').addEventListener('submit',event=>{event.preventDefault();action(async()=>{await api('/admin/customers','POST',{accessId:$('customer-id').value,name:$('customer-name').value});$('customer-form').reset();await load();notice('Đã tạo ID. Cấp tài khoản dịch vụ cho khách ở phần bên cạnh.');});});
@@ -47,7 +53,8 @@ $('account-form').addEventListener('submit',event=>{event.preventDefault();actio
 $('manual-toggle').addEventListener('change',()=>{$('manual-fields').hidden=!$('manual-toggle').checked;for(const id of ['account-user','account-password','account-2fa'])$(id).required=$('manual-toggle').checked;});
 $('sync-token').addEventListener('click',()=>action(async()=>{if(state.syncConfigured&&!confirm('Thay token sẽ ngắt script đang dùng token cũ. Tiếp tục?'))return;const data=await api('/admin/sync-token','POST',{});$('sync-config').textContent='PORTAL_SYNC_URL = '+data.endpoint+'\nPORTAL_SYNC_TOKEN = '+data.token+'\nPORTAL_DOC_IDS = '+JSON.stringify(state.accounts.map(a=>a.source_id).filter(Boolean))+'\n\nLưu các giá trị này vào Script properties. Token chỉ hiển thị ở lần tạo này.';$('sync-config').hidden=false;await load();notice('Đã tạo token mới. Cập nhật Script properties rồi chạy installSync.');}));
 $('new-account').addEventListener('click',()=>openAccount(null));$('cancel-account').addEventListener('click',()=>{$('account-form').reset();$('account-form').hidden=true;});$('search').addEventListener('input',()=>state&&render());$('reload').addEventListener('click',()=>action(load));
-$('logout').addEventListener('click',()=>action(async()=>{await api('/logout','POST',{admin:true});state=null;$('admin').hidden=true;$('login').hidden=false;$('logout').hidden=true;$('sync-config').textContent='';$('sync-config').hidden=true;$('account-form').reset();notice('Đã đăng xuất.');}));
+$('logout').addEventListener('click',()=>action(async()=>{try{await api('/logout','POST',{admin:true});notice('Đã đăng xuất.');}finally{loggedOut();}}));
 const setup=new URLSearchParams(location.hash.slice(1)).get('setup');
 if(setup){history.replaceState(null,'',location.pathname);action(async()=>{await api('/admin/bootstrap','POST',{token:setup});await load();notice('Đã mở phiên quản trị riêng. Link khởi tạo đã được sử dụng.');});}
-else load().catch(error=>{if(error.status!==401)notice(error.message,true);});
+else loggedOut();
+window.addEventListener('pagehide',loggedOut);

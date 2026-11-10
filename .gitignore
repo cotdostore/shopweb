@@ -1,4 +1,3 @@
-cloudflare/portal/assets.mjs
 cloudflare/dist/
 cloudflare/.test-data/
 *.local

@@ -1,0 +1,11 @@
+# Publish generated pages and shared browser modules, not backend source copies.
+exclude:
+  - cloudflare/bot
+  - cloudflare/portal
+  - cloudflare/tests
+  - cloudflare/dist
+  - cloudflare/build.mjs
+  - cloudflare/preview.mjs
+  - cloudflare/deployment.json
+  - cloudflare/README.md
+  - cloudflare/PERFORMANCE.md

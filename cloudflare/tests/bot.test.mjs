@@ -8,10 +8,10 @@ test('command aliases share canonical handlers without accepting unknown command
  assert.equal(parseAdminCommand('/constructor'),null);assert.equal(parseAdminCommand('/admin123'),null);assert.equal(parseAdminCommand('hi /admin'),null);
  assert.deepEqual(parseAdminCommand('/bc hello\nworld'),{command:'bc',caption:'hello\nworld'});
 });
-test('Worker serves admin tools and APIs but no duplicate customer website',async()=>{
+test('Worker serves APIs, redirects the old admin URL and has no website asset copies',async()=>{
  const bot=await loadBot(),env={PORTAL_DB:{},PORTAL_KEY:'synthetic'};
- for(const path of ['/chatgpt','/chatgpt/access','/portal/assets/customer.js'])assert.equal((await bot.default.fetch(new Request('https://portal.example'+path),env,{})).status,404);
- assert.equal((await bot.default.fetch(new Request('https://portal.example/portal/admin'),env,{})).status,200);
+ for(const path of ['/chatgpt','/chatgpt/access','/portal/assets/customer.js','/portal/assets/admin.js','/portal/assets/portal.css'])assert.equal((await bot.default.fetch(new Request('https://portal.example'+path),env,{})).status,404);
+ const redirect=await bot.default.fetch(new Request('https://portal.example/portal/admin'),env,{});assert.equal(redirect.status,302);assert.equal(redirect.headers.get('Location'),'https://cotdostore.github.io/shopweb/admin/');
 });
 test('catalog burst shares one fetch, expires after 30 seconds, and does not serve stale data on failure',async()=>{
  const bot=await loadBot();const oldFetch=globalThis.fetch,oldNow=Date.now;let time=100000,calls=0,fail=false;
