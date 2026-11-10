@@ -20,6 +20,9 @@
 .customer-page .topbar{min-height:56px;padding:4px 0;font-size:16px;font-weight:600;letter-spacing:.6px}
 .customer-page #logout{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;min-height:44px;font-size:16px}
 .customer-page #logout .action-icon{width:12px;height:12px}
+.customer-page .service-card,.customer-page .detail-panel{border:2px solid #1a1a1a;border-radius:14px;box-shadow:0 3px 0 rgba(0,0,0,.18);transition:box-shadow .18s ease}
+.customer-page .service-card.selected{border-color:#1a1a1a;background:#f0f6ef}
+.customer-page .service-card:hover,.customer-page .service-card:focus-visible,.customer-page .service-card:active,.customer-page .detail-panel:hover,.customer-page .detail-panel:focus-within{box-shadow:0 14px 22px rgba(0,0,0,.22)}
 @media(max-width:860px){
  .customer-page{-webkit-text-size-adjust:100%;text-size-adjust:100%}
  .customer-page .shell{display:block}
