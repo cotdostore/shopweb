@@ -31,8 +31,8 @@ function renderServices(accounts){
  for(const account of accounts){
   const button=document.createElement('button');button.className='service-card';button.dataset.id=account.id;
   const icon=document.createElement('span');icon.className='service-icon';
-  if(account.service==='chatgpt'){
-   const image=document.createElement('img');image.src='../assets/chatgpt.png';image.alt='ChatGPT';image.width=26;image.height=26;icon.append(image);
+  if(account.service==='chatgpt'||account.service==='netflix'){
+   const image=document.createElement('img');image.src='../assets/'+account.service+'.png';image.alt=account.service==='chatgpt'?'ChatGPT':'Netflix';image.width=34;image.height=34;icon.append(image);
   }else icon.textContent=account.service.slice(0,1).toUpperCase();
   const title=document.createElement('strong');title.textContent=account.label;
   const caption=document.createElement('small');caption.textContent=account.expires_at?'Hết hạn '+date(account.expires_at):'Dịch vụ đang khả dụng';

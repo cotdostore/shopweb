@@ -3,7 +3,8 @@
 @media(min-width:1500px){.shell{grid-template-columns:360px minmax(0,1fr)}.sidebar{padding:45px}.side-copy h1{font-size:46px}}@media(max-width:1100px){.shell{grid-template-columns:240px minmax(0,1fr)}.sidebar{padding:30px 23px}.side-copy h1{font-size:34px}.shell>main{padding:0 30px}.admin-grid{grid-template-columns:1fr}}@media(max-width:760px){.shell{display:block}.sidebar{height:auto;position:static;padding:18px 22px;display:block}.brand{font-size:14px}.brand-mark{width:39px;height:39px;font-size:23px;border-radius:10px}.brand-sub{font-size:8px}.side-copy,.side-bottom{display:none}.shell>main{padding:0 22px}.topbar{min-height:66px;font-size:8px}.login-panel{margin:32px auto 38px;max-width:465px}h2{font-size:32px}.step{margin-bottom:30px}.page-heading{margin-top:28px;align-items:flex-start}.page-heading h2{font-size:26px}.live-badge{font-size:8px;padding:5px 8px}.detail-panel{padding:20px}.detail-head h3{font-size:19px}.copy-row{gap:5px}.copy-row input{font-size:12px;padding:10px}.copy-row button{font-size:10px;padding:10px}.services{grid-template-columns:1fr 1fr;gap:10px}.service-card{padding:18px}.service-card strong{font-size:14px}.service-card small{font-size:9px}.admin-section{padding:18px}.form-grid{grid-template-columns:1fr}.form-grid .full{grid-column:auto}.empty{padding:28px 18px}footer{font-size:9px;margin-top:25px}}
 
 /* Customer portal sidebar follows the price page; admin styles stay unchanged. */
-.customer-page .shell{grid-template-columns:clamp(190px,15vw,260px) minmax(0,1fr)}
+.customer-page .shell{grid-template-columns:clamp(190px,15vw,260px) minmax(0,1fr);min-height:100vh;min-height:100dvh}
+.customer-page .shell>main{display:flex;flex-direction:column;flex:1;margin:0 auto}
 .customer-page .sidebar{background:linear-gradient(155deg,#eafff2 0%,#6fd39c 22%,#1e6b4b 55%,#0b3a2a 100%);color:#fff;justify-content:space-between;padding:clamp(14px,2vh,26px) clamp(14px,1.4vw,22px);font-family:"Baloo 2","Segoe UI",sans-serif}
 .customer-page .brand{gap:10px;letter-spacing:0;line-height:1.15}
 .customer-page .brand-logo{width:64px;height:64px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
@@ -11,7 +12,7 @@
 .customer-page .brand-name{font-size:clamp(20px,1vw,24px);font-weight:800;color:#0b3a2a;text-shadow:0 1px 0 #fff}
 .customer-page .brand-name span{color:#0e5c3f}
 .customer-page .headline{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:clamp(28px,2.7vw,42px);font-weight:550;line-height:1.2;letter-spacing:-1.2px;text-align:center;margin:auto 0;width:100%;overflow-wrap:normal}
-.customer-page .customer-footer{display:block;margin:0 0 20px;padding:0;border:0;background:none;box-shadow:none;text-align:center;font-size:12px;color:var(--muted)}
+.customer-page .customer-footer{display:block;margin:auto 0 20px;padding:24px 0 0;border:0;background:none;box-shadow:none;text-align:center;font-size:12px;color:var(--muted)}
 .customer-page .login-note{display:block;color:var(--muted);font-size:11px;line-height:1.8}
 .customer-page .services{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px}
 .customer-page .service-card{display:grid;flex:0 1 auto;width:fit-content;max-width:100%;min-width:0;grid-template-columns:44px minmax(0,1fr);grid-template-rows:auto auto;column-gap:12px;row-gap:3px;align-items:center;padding:10px 12px;min-height:72px}
@@ -29,7 +30,7 @@
 .customer-page .service-card:hover,.customer-page .service-card:focus-visible,.customer-page .service-card:active,.customer-page .detail-panel:hover,.customer-page .detail-panel:focus-within{box-shadow:0 14px 22px rgba(0,0,0,.22)}
 @media(max-width:860px){
  .customer-page{-webkit-text-size-adjust:100%;text-size-adjust:100%}
- .customer-page .shell{display:block}
+ .customer-page .shell{display:flex;flex-direction:column}
  .customer-page .sidebar{position:static;height:auto;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:14px;padding:12px 14px;background:linear-gradient(100deg,#eafff2 0%,#6fd39c 30%,#1e6b4b 65%,#0b3a2a 100%)}
  .customer-page .brand{gap:7px}
  .customer-page .brand-logo{width:36px;height:36px}
