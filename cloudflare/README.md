@@ -29,7 +29,11 @@ Không đổi `PORTAL_KEY` khi dữ liệu D1 vẫn dùng khóa cũ.
 ## Đồng bộ Docs và quản lý khách
 
 File Apps Script duy nhất nằm tại `portal-assets/Code.gs` và `portal-assets/appsscript.json`.
-Script properties: `PORTAL_SYNC_URL`, `PORTAL_SYNC_TOKEN`, `PORTAL_DOC_IDS`.
+Script properties: `PORTAL_SYNC_URL`, `PORTAL_SYNC_TOKEN`.
+Mỗi lượt chạy, script gọi GET `/portal/api/sync` bằng sync token để lấy các Docs của tài khoản đang bật trên web, rồi POST nội dung về cùng endpoint. Không trả thông tin khách hay mật khẩu trong danh sách.
+Thêm, đổi hoặc tắt Docs ngay trên trang quản trị; không cần sửa Script properties hay tạo lại token. `PORTAL_DOC_IDS` cũ được bỏ qua.
+Google account chạy script vẫn cần quyền đọc từng Docs. Nếu Docs chưa được chia sẻ cho account đó, script không thể đọc.
+Nâng cấp bản cũ: triển khai backend mới trước, thay `Code.gs` trong dự án Apps Script hiện có. Giữ nguyên hai properties và trigger `syncPortal`; không cần cấp thêm scope.
 Chạy `installSync` một lần để đọc Docs mỗi phút; trang khách kiểm tra lại mỗi 15 giây.
 Token GitHub quản trị phải có quyền Admin đối với `cotdostore/shopweb`.
 Phiên quản trị chỉ giữ trong bộ nhớ tab và hết hạn sau hai giờ.

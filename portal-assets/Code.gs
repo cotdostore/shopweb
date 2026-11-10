@@ -1,7 +1,7 @@
 // Configure ONLY in Project Settings > Script properties; never paste secrets in source.
 // PORTAL_SYNC_URL   https://<your-worker>/portal/api/sync
 // PORTAL_SYNC_TOKEN token generated on the portal admin page
-// PORTAL_DOC_IDS    JSON array of document IDs, e.g. ["your-document-id"]
+// Document IDs are discovered automatically from active accounts on the portal.
 function installSync() {
   portalConfig_();
   // Confirm an initial sync succeeds before replacing the trigger.
@@ -14,18 +14,27 @@ function portalConfig_() {
   const properties = PropertiesService.getScriptProperties();
   const url = properties.getProperty('PORTAL_SYNC_URL');
   const token = properties.getProperty('PORTAL_SYNC_TOKEN');
-  const ids = JSON.parse(properties.getProperty('PORTAL_DOC_IDS') || '[]');
-  if (!/^https:\/\/[^/]+\/portal\/api\/sync$/.test(url || '') || !token || !Array.isArray(ids) || !ids.length || ids.length > 50)
-    throw new Error('Set PORTAL_SYNC_URL, PORTAL_SYNC_TOKEN and PORTAL_DOC_IDS in Script properties.');
-  return {url: url, token: token, ids: ids};
+  if (!/^https:\/\/[^/]+\/portal\/api\/sync$/.test(url || '') || !token)
+    throw new Error('Set PORTAL_SYNC_URL and PORTAL_SYNC_TOKEN in Script properties.');
+  return {url: url, token: token};
 }
 function syncPortal() {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(1000)) return;
   try {
     const config = portalConfig_();
+    // Refresh every run: newly added Docs need no Script property changes.
+    const sources = UrlFetchApp.fetch(config.url, {
+      method: 'get', headers: {Authorization: 'Bearer ' + config.token},
+      muteHttpExceptions: true, followRedirects: false
+    });
+    if (sources.getResponseCode() !== 200)
+      throw new Error('Cannot load portal documents, status ' + sources.getResponseCode());
+    const ids = JSON.parse(sources.getContentText()).sourceIds;
+    if (!Array.isArray(ids) || ids.some(id => typeof id !== 'string' || !/^[a-zA-Z0-9_-]{10,200}$/.test(id)))
+      throw new Error('Invalid portal document list.');
     let failures = 0;
-    config.ids.forEach(function(id) {
+    ids.forEach(function(id, index) {
       try {
         const observedAt = Date.now();
         // Advanced Docs service accepts documents.readonly; DocumentApp.openById
@@ -65,7 +74,7 @@ function syncPortal() {
       } catch (error) {
         failures++;
         // Do not log document text, credentials, URLs, token or response bodies.
-        console.error('Portal document sync failed at index ' + config.ids.indexOf(id));
+        console.error('Portal document sync failed at index ' + index);
       }
     });
     if (failures) throw new Error(failures + ' document(s) could not sync. Check access and portal account status.');

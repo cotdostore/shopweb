@@ -127,6 +127,10 @@ async function sync(request,env) {
  const tokenHash=await digest(auth.slice(7));
  const config=await query(env,"SELECT value FROM portal_config WHERE key='sync_token_hash' AND value=?",tokenHash).first();
  if(!config)throw new Problem('Sync token không hợp lệ.',401);
+ if(request.method==='GET') {
+  const sources=await query(env,'SELECT DISTINCT source_id FROM portal_accounts WHERE active=1 AND source_id IS NOT NULL ORDER BY source_id').all();
+  return reply({sourceIds:sources.results.map(row=>row.source_id)});
+ }
  const data=await body(request);
  return reply(await updateFromDoc(env,String(data.sourceId??''),data.paragraphs,data.observedAt));
 }
@@ -223,7 +227,7 @@ async function routePortal(request,env) {
  if(!env.PORTAL_DB||!env.PORTAL_KEY)return reply({error:'Cổng dịch vụ chưa được cấu hình.'},503);
  try {
   const route=path.slice(API.length);
-  if(route==='/sync'&&request.method==='POST')return await sync(request,env);
+  if(route==='/sync'&&['GET','POST'].includes(request.method))return await sync(request,env);
   const github=request.headers.get('Origin')===GITHUB_ORIGIN&&githubApi(route);
   if(!['GET','HEAD'].includes(request.method)&&request.headers.get('Origin')!==url.origin&&!github)throw new Problem('Nguồn truy cập không được phép.',403);
   if(route==='/login'&&request.method==='POST') {
