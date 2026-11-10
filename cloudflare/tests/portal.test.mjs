@@ -294,3 +294,15 @@ test('GitHub admin uses a separate in-memory bearer role, supports deletion, and
   assert.equal((await handlePortal(gh('/admin/bootstrap','POST',{token:setup}),env)).status,401);
  }finally{globalThis.fetch=oldFetch;dispose();}
 });
+test('Messenger xoa retains chat binding and uses the same complete deletion as admin web',async()=>{
+ const {env,dispose}=database();try{
+  const user=await createCustomer(env,'messdelete01','Test','correct-chat');
+  const login=await call(env,'/login','POST',{accessId:'messdelete01'});
+  assert.match(await portalCommand('xoa','messdelete01 extra','correct-chat',env),/Dùng \/xoa/);
+  assert.match(await portalCommand('xoa','messdelete01','wrong-chat',env),/cuộc chat khác/);
+  assert(await env.PORTAL_DB.prepare('SELECT id FROM portal_customers WHERE id=?').bind(user.id).first());
+  assert.match(await portalCommand('xoa','messdelete01','correct-chat',env),/Đã xóa ID/);
+  assert.equal((await call(env,'/snapshot','GET',undefined,login.cookie)).status,401);
+  assert.equal((await env.PORTAL_DB.prepare('SELECT COUNT(*) AS count FROM portal_customers WHERE id=?').bind(user.id).first()).count,0);
+ }finally{dispose();}
+});

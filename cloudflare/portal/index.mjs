@@ -146,12 +146,7 @@ async function adminRoute(request,env,path) {
  if(path==='/admin/customers'&&request.method==='POST')return reply(await createCustomer(env,data.accessId,data.name),201);
  if(path==='/admin/customer'&&request.method==='DELETE') {
   if(typeof data.id!=='string'||!data.id.trim()||data.id.length>100)throw new Problem('Thiếu ID khách cần xóa.');
-  // One transaction: remove dependent records before the customer, preserving service accounts.
-  const results=await env.PORTAL_DB.batch([
-   query(env,'DELETE FROM portal_grants WHERE customer_id=?',data.id),
-   query(env,'DELETE FROM portal_sessions WHERE customer_id=?',data.id),
-   query(env,'DELETE FROM portal_customers WHERE id=? RETURNING id',data.id)]);
-  if(!results[2].results.length)throw new Problem('Không tìm thấy khách.',404);
+  if(!await deleteCustomer(env,data.id))throw new Problem('Không tìm thấy khách.',404);
   return reply({ok:true});
  }
  if(path==='/admin/customer'&&request.method==='PUT') {
@@ -272,12 +267,22 @@ async function routePortal(request,env) {
  }
 }
 
+async function deleteCustomer(env,id) {
+ // One transaction shared by web and Messenger; service accounts are preserved.
+ const results=await env.PORTAL_DB.batch([
+  query(env,'DELETE FROM portal_grants WHERE customer_id=?',id),
+  query(env,'DELETE FROM portal_sessions WHERE customer_id=?',id),
+  query(env,'DELETE FROM portal_customers WHERE id=? RETURNING id',id)]);
+ return results[2].results.length>0;
+}
 // Called only after the existing bot verifies the exact Page message via Meta Graph.
 export async function portalCommand(command,argument,recipient,env) {
  if(!env.PORTAL_DB||!env.PORTAL_KEY)return 'Cổng truy cập chưa được cấu hình.';
  const link=CUSTOMER_URL;
  try {
-  const parts=argument.trim().split(/\s+/),accessId=normalizeId(parts[0]);
+  const parts=argument.trim().split(/\s+/);
+  if(command==='xoa'&&(parts.length!==1||!parts[0]))throw new Problem('Dùng /xoa ID để xóa một ID.');
+  const accessId=normalizeId(parts[0]);
   if(command==='id') {
    await createCustomer(env,accessId,accessId,recipient);
    return `Đã tạo ID: ${accessId}\nNhập ID tại: ${link}\nShop sẽ cấp dịch vụ cho bạn sau khi xác nhận đơn.`;
@@ -285,6 +290,10 @@ export async function portalCommand(command,argument,recipient,env) {
   const user=await getCustomer(env,accessId);
   if(!user)throw new Problem('Chưa có ID này. Dùng /id để tạo trước.');
   if(user.messenger_id!==recipient)throw new Problem('ID thuộc cuộc chat khác. Kiểm tra tại trang quản trị.');
+  if(command==='xoa') {
+   if(!await deleteCustomer(env,user.id))throw new Problem('Không tìm thấy khách.',404);
+   return `Đã xóa ID: ${accessId}. Quyền truy cập và phiên đăng nhập đã được hủy.`;
+  }
   if(command==='khoa'||command==='block') {
    await env.PORTAL_DB.batch([query(env,'UPDATE portal_customers SET active=0 WHERE id=?',user.id),query(env,'DELETE FROM portal_sessions WHERE customer_id=?',user.id)]);
    return 'Đã khóa quyền truy cập của ID này.';

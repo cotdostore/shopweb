@@ -2169,7 +2169,7 @@ async function handlePageAdminCommand(event, pageId, env) {
   await env.SESSION_KV.put(key, "pending", { expirationTtl: 86400 });
   const recipient = String(event.recipient.id);
   try {
-    if (["id", "cap", "block", "unblock", "taikhoan"].includes(command)) {
+    if (["id", "cap", "block", "unblock", "taikhoan", "xoa"].includes(command)) {
       const message = await portalCommand(command, caption, recipient, env);
       const response = await sendText(recipient, message, env);
       if (!response.ok) throw new Error("Portal command reply failed");
@@ -2239,7 +2239,7 @@ async function handlePageAdminCommand(event, pageId, env) {
     } else if (["bc", "bccode", "bcstop", "bcstat"].includes(command)) {
       await handleBroadcastCommand(command, caption, recipient, env);
     } else if (command === "admin") {
-      const response = await sendText(recipient, "ADMIN COMMANDS\n\n/admin - Xem danh sách lệnh\n/id ID - Tạo ID, báo nếu trùng\n/cap ID gpt 3month - Cấp hạn từ hiện tại\n/block ID - Khóa và hủy phiên\n/unblock ID - Mở khóa, giữ hạn cũ\n/taikhoan ID - Gửi ID và link truy cập\nThời hạn: 7day, 2week, 3month, 1year\nQuản lý: https://cotdostore.github.io/shopweb/admin/\n/check - Đánh dấu chat đã check, hủy tin nhắc sau 12 tiếng\n/discount [amount] - Giảm riêng theo tiền hoặc % (vd: 10k, 30%); /discount 0 để gỡ\n/time [thời hạn] - Gắn label thời gian (vd: 4 tháng, 1 năm); /time 0 để gỡ\n/sendprice - Gửi bảng giá ngay\n/sendprice Nội dung tùy ý - Gửi bảng giá với lời dẫn riêng\n/rs - Reset phiên bot của khách hiện tại\n/sendmenu - Đồng bộ lại menu 3 gạch\n/help - Gửi thông tin chuyển khoản + QR\n/boton - Bật bot toàn Page\n/botoff - Tắt bot toàn Page\n/botstatus - Xem trạng thái bot\n/bc Nội dung - Soạn tin gửi hàng loạt\n/bccode MÃ - Xác nhận gửi\n/bcstat MÃ - Xem tiến độ\n/bcstop MÃ - Dừng phần chưa gửi", env);
+      const response = await sendText(recipient, "ADMIN COMMANDS\n\n/admin - Xem danh sách lệnh\n/id ID - Tạo ID, báo nếu trùng\n/xoa ID - Xóa ID, quyền truy cập và phiên đăng nhập\n/cap ID gpt 3month - Cấp hạn từ hiện tại\n/block ID - Khóa và hủy phiên\n/unblock ID - Mở khóa, giữ hạn cũ\n/taikhoan ID - Gửi ID và link truy cập\nThời hạn: 7day, 2week, 3month, 1year\nQuản lý: https://cotdostore.github.io/shopweb/admin/\n/check - Đánh dấu chat đã check, hủy tin nhắc sau 12 tiếng\n/discount [amount] - Giảm riêng theo tiền hoặc % (vd: 10k, 30%); /discount 0 để gỡ\n/time [thời hạn] - Gắn label thời gian (vd: 4 tháng, 1 năm); /time 0 để gỡ\n/sendprice - Gửi bảng giá ngay\n/sendprice Nội dung tùy ý - Gửi bảng giá với lời dẫn riêng\n/rs - Reset phiên bot của khách hiện tại\n/sendmenu - Đồng bộ lại menu 3 gạch\n/help - Gửi thông tin chuyển khoản + QR\n/boton - Bật bot toàn Page\n/botoff - Tắt bot toàn Page\n/botstatus - Xem trạng thái bot\n/bc Nội dung - Soạn tin gửi hàng loạt\n/bccode MÃ - Xác nhận gửi\n/bcstat MÃ - Xem tiến độ\n/bcstop MÃ - Dừng phần chưa gửi", env);
       if (!response.ok) throw new Error("Admin command list failed");
     } else if (command === "sendprice") {
       const outcome = await sendPriceButton(recipient, env, { reason: "admin", caption });

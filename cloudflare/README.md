@@ -14,6 +14,7 @@ Admin gõ lệnh trong cuộc chat với đúng khách bằng tài khoản Page.
 | --- | --- |
 | `/admin` | Menu chung cho quản trị và truy cập. `/access` vẫn là alias. |
 | `/id linhhuynh01` | Tạo ID; báo trùng và không ghi đè. Gắn với cuộc chat hiện tại. |
+| `/xoa linhhuynh01` | Xóa ID, quyền và phiên; chỉ xử lý ID thuộc cuộc chat hiện tại. |
 | `/cap linhhuynh01 gpt 3month` | Cấp ChatGPT ba tháng từ lúc xử lý lệnh thành công. |
 | `/block linhhuynh01` | Khóa ID và hủy mọi phiên hiện có. |
 | `/unblock linhhuynh01` | Mở ID, không kéo dài hạn. Khách đăng nhập lại. |
