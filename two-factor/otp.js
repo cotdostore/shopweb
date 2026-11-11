@@ -21,7 +21,7 @@ function tick() {
   const milliseconds = expiresAt - performance.now();
   if (milliseconds <= 0) {
     showStatus('Đang lấy mã mới…');
-    refresh();
+    timer = setTimeout(refresh, 0);
     return;
   }
   remaining.textContent = `Đổi mã sau ${Math.ceil(milliseconds / 1000)} giây`;
