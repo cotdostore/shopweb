@@ -1,5 +1,9 @@
-const endpoint = 'https://cotdo-two-factor.kazuto121100.workers.dev/code';
 const accessToken = location.hash.slice(1);
+const endpoint = /^[0-9a-f]{64}$/.test(accessToken)
+  ? 'https://cotdo-two-factor.kazuto121100.workers.dev/code'
+  : /^[A-Za-z0-9_-]{43}$/.test(accessToken)
+    ? 'https://cotdo-messenger-bot.kazuto121100.workers.dev/portal/api/totp'
+    : null;
 const status = document.querySelector('#status');
 const result = document.querySelector('#result');
 const code = document.querySelector('#code');
@@ -81,7 +85,7 @@ copy.addEventListener('click', async () => {
   }
 });
 
-if (/^[0-9a-f]{64}$/.test(accessToken)) {
+if (endpoint) {
   document.addEventListener('visibilitychange', () => {
     clearTimeout(timer);
     if (document.hidden) {

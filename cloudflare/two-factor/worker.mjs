@@ -3,12 +3,16 @@ const period = 30_000;
 const site = 'https://cotdostore.github.io';
 const encoder = new TextEncoder();
 
-function decodeBase32(value) {
+export function normalizeSetupKey(value) {
   const secret = value.replace(/\s/g, '').replace(/=+$/, '').toUpperCase();
   if (!/^[A-Z2-7]+$/.test(secret) || ![0, 2, 4, 5, 7].includes(secret.length % 8)) {
     throw new Error('Invalid Base32 setup key');
   }
+  return secret;
+}
 
+function decodeBase32(value) {
+  const secret = normalizeSetupKey(value);
   const bytes = new Uint8Array(Math.floor(secret.length * 5 / 8));
   let buffer = 0;
   let bits = 0;
@@ -34,6 +38,13 @@ export async function generateCode(secret, time) {
   const offset = digest.getUint8(digest.byteLength - 1) & 15;
   const truncated = digest.getUint32(offset) & 0x7fffffff;
   return String(truncated % 1_000_000).padStart(6, '0');
+}
+
+export async function currentCode(secret) {
+  const time = Date.now();
+  const code = await generateCode(secret, time);
+  const expiresIn = Math.max(0, time - time % period + period - Date.now());
+  return {code, expiresIn};
 }
 
 function hash(value) {
@@ -71,10 +82,7 @@ export default {
     }
 
     try {
-      const time = Date.now();
-      const code = await generateCode(env.TOTP_SETUP_KEY, time);
-      const expiresIn = Math.max(0, time - time % period + period - Date.now());
-      return json({code, expiresIn});
+      return json(await currentCode(env.TOTP_SETUP_KEY));
     } catch {
       return json({error: 'Chưa tạo được mã 2FA.'}, 503);
     }

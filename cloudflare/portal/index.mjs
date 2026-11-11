@@ -1,11 +1,13 @@
 import {digest,accessHash,seal,unseal,randomToken} from './crypto.mjs';
 import {normalizeId,parseCredentials,safeUrl} from './parser.mjs';
 import {grantExpiry} from '../../portal-assets/duration.mjs';
+import {currentCode,normalizeSetupKey} from '../two-factor/worker.mjs';
 
 const API='/portal/api', HOUR=3600000;
 const GITHUB_ORIGIN='https://cotdostore.github.io';
 const CUSTOMER_URL=GITHUB_ORIGIN+'/shopweb/customer-portal/';
 const ADMIN_URL=GITHUB_ORIGIN+'/shopweb/admin/';
+const TOTP_URL=GITHUB_ORIGIN+'/shopweb/two-factor/';
 const customerCookie='__Host-cotdo_customer', adminCookie='__Host-cotdo_admin';
 const headers={
  'Cache-Control':'no-store, private', 'X-Content-Type-Options':'nosniff',
@@ -139,17 +141,47 @@ async function sync(request,env) {
  const data=await body(request);
  return reply(await updateFromDoc(env,String(data.sourceId??''),data.paragraphs,data.observedAt));
 }
+function totpLink({label,token,createdAt}) {
+ return {label,url:TOTP_URL+'#'+token,createdAt};
+}
+async function addTotpLink(request,env) {
+ const data=await body(request,2000);
+ const label=typeof data?.label==='string'?data.label.trim():'';
+ if(label.length>100)throw new Problem('Tên link tối đa 100 ký tự.');
+ if(typeof data?.setupKey!=='string'||data.setupKey.length>512)throw new Problem('Nhập setup key 2FA hợp lệ.');
+ let setupKey;
+ try{setupKey=normalizeSetupKey(data.setupKey);}catch{throw new Problem('Setup key 2FA phải ở định dạng Base32.');}
+ const token=randomToken();
+ const key='totp:'+await digest(token);
+ const entry={label:label||'Link 2FA',token,setupKey,createdAt:now()};
+ const value=await seal(entry,env.PORTAL_KEY,key);
+ await query(env,'INSERT INTO portal_config(key,value) VALUES(?,?)',key,value).run();
+ return reply(totpLink(entry),201);
+}
+async function getTotpCode(request,env) {
+ const token=/^Bearer ([A-Za-z0-9_-]{43})$/.exec(request.headers.get('Authorization')??'')?.[1];
+ if(!token)throw new Problem('Link 2FA không hợp lệ hoặc đã bị thu hồi.',401);
+ const key='totp:'+await digest(token);
+ const row=await query(env,'SELECT value FROM portal_config WHERE key=?',key).first();
+ if(!row)throw new Problem('Link 2FA không hợp lệ hoặc đã bị thu hồi.',401);
+ const {setupKey}=await unseal(row.value,env.PORTAL_KEY,key);
+ return reply(await currentCode(setupKey));
+}
 async function adminRoute(request,env,path) {
  await adminSession(request,env);
+ if(path==='/admin/totp'&&request.method==='POST')return addTotpLink(request,env);
  if(path==='/admin/state'&&request.method==='GET') {
-  const [customerRows,accountRows,grantRows,configRows]=await env.PORTAL_DB.batch([
+  const [customerRows,accountRows,grantRows,configRows,totpRows]=await env.PORTAL_DB.batch([
    query(env,'SELECT * FROM portal_customers ORDER BY created_at DESC LIMIT 1000'),
    query(env,'SELECT id,service,label,source_id,updated_at,checked_at,sync_error,active FROM portal_accounts ORDER BY service,label LIMIT 1000'),
    query(env,'SELECT * FROM portal_grants LIMIT 5000'),
-   query(env,"SELECT key FROM portal_config WHERE key='sync_token_hash'")]);
+   query(env,"SELECT key FROM portal_config WHERE key='sync_token_hash'"),
+   query(env,"SELECT key,value FROM portal_config WHERE key>='totp:' AND key<'totp;'")]);
   const customers=customerRows.results;
   const users=await Promise.all(customers.map(async row=>({id:row.id,accessId:await unseal(row.access_encrypted,env.PORTAL_KEY,'customer:'+row.id),name:row.display_name,active:!!row.active,messengerId:row.messenger_id})));
-  return reply({customers:users,accounts:accountRows.results,grants:grantRows.results,syncConfigured:configRows.results.length>0});
+  const totpLinks=await Promise.all(totpRows.results.map(async row=>totpLink(await unseal(row.value,env.PORTAL_KEY,row.key))));
+  totpLinks.sort((a,b)=>b.createdAt-a.createdAt);
+  return reply({customers:users,accounts:accountRows.results,grants:grantRows.results,syncConfigured:configRows.results.length>0,totpLinks});
  }
  const data=await body(request);
  if(path==='/admin/customers'&&request.method==='POST')return reply(await createCustomer(env,data.accessId,data.name),201);
@@ -219,7 +251,7 @@ async function adminRoute(request,env,path) {
  throw new Problem('Không tìm thấy API.',404);
 }
 const customerApi=route=>['/login','/logout','/me','/snapshot'].includes(route)||route.startsWith('/account/');
-const githubApi=route=>customerApi(route)||['/admin/login','/admin/bootstrap','/admin/state','/admin/customers','/admin/customer','/admin/grant','/admin/account','/admin/sync-token'].includes(route);
+const githubApi=route=>customerApi(route)||['/totp','/admin/login','/admin/bootstrap','/admin/state','/admin/customers','/admin/customer','/admin/grant','/admin/account','/admin/sync-token','/admin/totp'].includes(route);
 export async function handlePortal(request,env) {
  const url=new URL(request.url),origin=request.headers.get('Origin');
  // The Apps Script integration authenticates with its own sync token.
@@ -271,6 +303,7 @@ async function routePortal(request,env) {
    return github?reply({ok:true}):reply({ok:true},200,{'Set-Cookie':cookie(name,'',0)});
   }
   if(route.startsWith('/admin/'))return await adminRoute(request,env,route);
+  if(route==='/totp'&&request.method==='GET')return await getTotpCode(request,env);
   if(request.method==='GET'&&['/me','/snapshot'].includes(route))return reply(await customerSnapshot(request,env,url.searchParams.get('account'),route==='/snapshot'));
   if(route.startsWith('/account/')&&request.method==='GET') {
    const snapshot=await customerSnapshot(request,env,decodeURIComponent(route.slice(9)));
