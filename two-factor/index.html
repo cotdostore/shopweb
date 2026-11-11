@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src https://cotdo-two-factor.kazuto121100.workers.dev; base-uri 'none'; form-action 'none'">
+  <title>Mã xác minh 2FA · Cốt Đờ Store</title>
+  <link rel="stylesheet" href="../portal-assets/portal.css">
+  <link rel="stylesheet" href="./otp.css">
+  <script type="module" src="./otp.js"></script>
+</head>
+<body class="otp-page">
+  <main class="detail-panel otp-panel">
+    <div class="otp-brand"><img src="../assets/logo.png" alt="" width="40" height="40"> Cốt Đờ Store</div>
+    <h1>Mã xác minh 2FA</h1>
+    <p class="notice" id="status" role="status">Đang lấy mã…</p>
+    <div id="result" hidden>
+      <label for="code">Mã hiện tại</label>
+      <div class="copy-row">
+        <input id="code" type="text" readonly autocomplete="off" spellcheck="false">
+        <button id="copy" class="secondary" type="button">Sao chép</button>
+      </div>
+      <p class="small muted" id="remaining"></p>
+    </div>
+  </main>
+</body>
+</html>
