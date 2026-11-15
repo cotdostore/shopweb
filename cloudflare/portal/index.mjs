@@ -85,6 +85,13 @@ export async function createCustomer(env,rawId,displayName='',messengerId=null) 
  return {id,accessId};
 }
 async function getCustomer(env,accessId){return query(env,'SELECT * FROM portal_customers WHERE access_hash=?',await accessHash(normalizeId(accessId),env.PORTAL_KEY)).first();}
+async function grantAccess(env,customerId,accountId,expiry) {
+ const granted=await query(env,`INSERT INTO portal_grants(customer_id,account_id,expires_at)
+  SELECT c.id,a.id,? FROM portal_customers c JOIN portal_accounts a ON a.id=? AND a.active=1
+  WHERE c.id=? AND c.active=1
+  ON CONFLICT(customer_id,account_id) DO UPDATE SET expires_at=excluded.expires_at RETURNING customer_id`,expiry,accountId,customerId).first();
+ if(!granted)throw new Problem('Khách hoặc tài khoản không khả dụng.');
+}
 async function decryptAccount(env,row) {
  const secret=await unseal(row.secret,env.PORTAL_KEY,'account:'+row.id);
  return {id:row.id,label:row.label,service:row.service,updatedAt:row.updated_at,checkedAt:row.checked_at,
@@ -204,11 +211,7 @@ async function adminRoute(request,env,path) {
    let expiry=data.expiresAt==null?null:Number(data.expiresAt);
    if(data.duration){try{expiry=grantExpiry(data.duration).expiresAt;}catch(error){throw new Problem(error.message);}}
    if(expiry!==null&&(!Number.isSafeInteger(expiry)||expiry<=now()))throw new Problem('Hạn dùng phải ở tương lai.');
-   const granted=await query(env,`INSERT INTO portal_grants(customer_id,account_id,expires_at)
-    SELECT c.id,a.id,? FROM portal_customers c JOIN portal_accounts a ON a.id=? AND a.active=1
-    WHERE c.id=? AND c.active=1
-    ON CONFLICT(customer_id,account_id) DO UPDATE SET expires_at=excluded.expires_at RETURNING customer_id`,expiry,data.accountId,data.customerId).first();
-   if(!granted)throw new Problem('Khách hoặc tài khoản không khả dụng.');
+   await grantAccess(env,data.customerId,data.accountId,expiry);
   }
   return reply({ok:true});
  }
@@ -341,7 +344,8 @@ export async function portalCommand(command,argument,recipient,env) {
   }
   const user=await getCustomer(env,accessId);
   if(!user)throw new Problem('Chưa có ID này. Dùng /id để tạo trước.');
-  if(user.messenger_id!==recipient)throw new Problem('ID thuộc cuộc chat khác. Kiểm tra tại trang quản trị.');
+  const sameChat=user.messenger_id===recipient;
+  if(command!=='cap'&&!sameChat)throw new Problem('ID thuộc cuộc chat khác. Kiểm tra tại trang quản trị.');
   if(command==='xoa') {
    if(!await deleteCustomer(env,user.id))throw new Problem('Không tìm thấy khách.',404);
    return `Đã xóa ID: ${accessId}. Quyền truy cập và phiên đăng nhập đã được hủy.`;
@@ -360,7 +364,8 @@ export async function portalCommand(command,argument,recipient,env) {
    let term;try{term=grantExpiry(parts[2]);}catch(error){throw new Problem(error.message);}
    const accounts=(await query(env,'SELECT id,label FROM portal_accounts WHERE service=? AND active=1',service).all()).results;
    if(accounts.length!==1)throw new Problem(accounts.length?'Dịch vụ có nhiều tài khoản. Chọn đúng tài khoản tại trang quản trị.':'Chưa có dịch vụ. Dùng /cap ID chatgpt hoặc cấp tại trang quản trị.');
-   await query(env,'INSERT INTO portal_grants(customer_id,account_id,expires_at) VALUES(?,?,?) ON CONFLICT(customer_id,account_id) DO UPDATE SET expires_at=excluded.expires_at',user.id,accounts[0].id,term.expiresAt).run();
+   await grantAccess(env,user.id,accounts[0].id,term.expiresAt);
+   if(!sameChat)return `Đã cấp dịch vụ trong ${term.label} cho ID đã nhập.`;
    const expiry=new Intl.DateTimeFormat('vi-VN',{dateStyle:'short',timeStyle:'short',timeZone:'Asia/Ho_Chi_Minh'}).format(term.expiresAt);
    return `Đã cấp ${accounts[0].label} trong ${term.label}.\nHết hạn: ${expiry} (giờ Việt Nam).\nID truy cập: ${accessId}\n${link}\nNhập ID để xem tài khoản, mật khẩu và link 2FA mới nhất.`;
   }
