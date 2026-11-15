@@ -1,6 +1,25 @@
 const $=id=>document.getElementById(id);
 const remoteApi=document.querySelector('meta[name="portal-api"]')?.content;
 const pageBase=new URL('./',location.href).pathname;
+const serviceLogos=new Map(Object.entries({
+ chatgpt:'chatgpt.png',gpt:'chatgpt.png',openai:'chatgpt.png',netflix:'netflix.png',
+ google:'google.svg',gg:'google.svg',gemini:'gemini.png',googlegemini:'gemini.png',gggemini:'gemini.png',
+ googleone:'ggone.png',ggone:'ggone.png',googledrive:'google-drive.png',ggdrive:'google-drive.png',
+ googlephotos:'google-photos.png',ggphotos:'google-photos.png',
+ youtube:'youtube.png',ytb:'youtube.png',yt:'youtube.png',
+ applearcade:'apple-arcade.png',applemusic:'apple-music.png',appletv:'apple-tv.png',icloud:'icloud.png',
+ canva:'canva.png',capcut:'capcut.png',duolingo:'duolingo.png',meitu:'meitu.png',quizlet:'quizlet.png',
+ scribd:'scribd.png',soundcloud:'soundcloud.png',spotify:'spotify.png',studocu:'studocu.png'
+}));
+function serviceLogo(code){
+ const parts=code.toLowerCase().match(/[a-z0-9]+/g)??[];
+ // Check the most specific brand first so google-drive keeps its own icon.
+ while(parts.length){
+  const logo=serviceLogos.get(parts.join('').replace(/\d+$/,''));
+  if(logo)return logo;
+  parts.pop();
+ }
+}
 // Sessions stay in memory. Credentials and permissions are never cached across requests.
 let accessToken=null,selected=null,details=null,timer=null,controller=null,generation=0,serviceVersion='';
 const formatter=new Intl.DateTimeFormat('vi-VN',{dateStyle:'short',timeStyle:'short',timeZone:'Asia/Ho_Chi_Minh'});
@@ -31,8 +50,9 @@ function renderServices(accounts){
  for(const account of accounts){
   const button=document.createElement('button');button.className='service-card';button.dataset.id=account.id;
   const icon=document.createElement('span');icon.className='service-icon';
-  if(account.service==='chatgpt'||account.service==='netflix'){
-   const image=document.createElement('img');image.src='../assets/'+account.service+'.png';image.alt=account.service==='chatgpt'?'ChatGPT':'Netflix';image.width=34;image.height=34;icon.append(image);
+  const logo=serviceLogo(account.service);
+  if(logo){
+   const image=document.createElement('img');image.src='../assets/'+logo;image.alt='';image.width=34;image.height=34;icon.append(image);
   }else icon.textContent=account.service.slice(0,1).toUpperCase();
   const title=document.createElement('strong');title.textContent=account.label;
   const caption=document.createElement('small');caption.textContent=account.expires_at?'Hết hạn '+date(account.expires_at):'Dịch vụ đang khả dụng';
