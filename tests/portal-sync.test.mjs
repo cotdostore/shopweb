@@ -48,6 +48,19 @@ test('sync discovery requires a token and returns current active sources only',a
 });
 
 const script=await readFile(new URL('../portal-assets/Code.gs',import.meta.url),'utf8');
+test('Apps Script isolates the main credential tab from expired accounts, including nested tabs',()=>{
+ const context=vm.createContext({});vm.runInContext(script,context);
+ const content=text=>[{paragraph:{elements:[{textRun:{content:text}}]}}];
+ const live=content('live'),archive=content('expired');
+ const tab=(title,body,childTabs=[])=>({tabProperties:{title},documentTab:{body:{content:body}},childTabs});
+ const select=doc=>context.portalSourceContent_(doc);
+ assert.equal(select({body:{content:live}}),live);
+ assert.equal(select({tabs:[tab('Tab 1',live)]}),live);
+ assert.equal(select({tabs:[tab('acc hết hạn',archive),tab(' ACC CHÍNH ',live,[tab('old',archive)])]}),live);
+ assert.equal(select({tabs:[tab('Archive',archive,[tab('acc chinh',live)])]}),live);
+ assert.throws(()=>select({tabs:[tab('one',live),tab('two',archive)]}),/DOC_TAB_SELECTION/);
+ assert.throws(()=>select({tabs:[tab('acc chính',live),tab('acc chinh',archive)]}),/DOC_TAB_SELECTION/);
+});
 function harness(){
  let ids=['document_first'],read=[],sent=[],released=0,status=200;
  const context=vm.createContext({console:{error(){}},PropertiesService:{getScriptProperties:()=>({getProperty:key=>({PORTAL_SYNC_URL:'https://worker.example/portal/api/sync',PORTAL_SYNC_TOKEN:'test-token',PORTAL_DOC_IDS:'invalid old value'})[key]})},

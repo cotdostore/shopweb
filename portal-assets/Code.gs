@@ -18,6 +18,23 @@ function portalConfig_() {
     throw new Error('Set PORTAL_SYNC_URL and PORTAL_SYNC_TOKEN in Script properties.');
   return {url: url, token: token};
 }
+// Never combine live credentials with an archived account in another tab.
+function portalSourceContent_(doc) {
+  if (!doc.tabs || !doc.tabs.length) return (doc.body || {}).content;
+  const tabs = [];
+  function collect(items) {
+    (items || []).forEach(function(tab) { tabs.push(tab); collect(tab.childTabs); });
+  }
+  collect(doc.tabs);
+  const main = tabs.filter(function(tab) {
+    const title = String((tab.tabProperties || {}).title || '').normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '').trim().toLowerCase().replace(/\s+/g, ' ');
+    return title === 'acc chinh';
+  });
+  if (main.length > 1 || (!main.length && tabs.length > 1))
+    throw new Error('DOC_TAB_SELECTION: Docs with multiple tabs must have exactly one tab named "acc chính".');
+  return (((main[0] || tabs[0]).documentTab || {}).body || {}).content;
+}
 function syncPortal() {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(1000)) return;
@@ -56,14 +73,7 @@ function syncPortal() {
             });
           });
         }
-        function walkTabs(tabs) {
-          (tabs || []).forEach(function(tab) {
-            walkContent(((tab.documentTab || {}).body || {}).content);
-            walkTabs(tab.childTabs);
-          });
-        }
-        if (doc.tabs && doc.tabs.length) walkTabs(doc.tabs);
-        else walkContent((doc.body || {}).content);
+        walkContent(portalSourceContent_(doc));
         const response = UrlFetchApp.fetch(config.url, {
           method: 'post', contentType: 'application/json',
           headers: {Authorization: 'Bearer ' + config.token},

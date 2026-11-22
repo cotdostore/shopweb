@@ -36,6 +36,7 @@ Google account chạy script vẫn cần quyền đọc từng Docs. Nếu Docs 
 Nâng cấp bản cũ: triển khai backend mới trước, thay `Code.gs` trong dự án Apps Script hiện có. Giữ nguyên hai properties và trigger `syncPortal`; không cần cấp thêm scope.
 Chạy `installSync` một lần để đọc Docs mỗi 5 phút; trang khách kiểm tra lại mỗi 15 giây.
 Docs hỗ trợ mẫu cũ (email và mật khẩu ở hai dòng liên tiếp, hyperlink xác minh) hoặc nhãn `Tk:`, `Mk:`, `Link 2fa: https://…`. Mỗi Docs cần đúng một email và một link HTTPS 2FA.
+Nếu Docs có nhiều tab, đặt tên tab cần đồng bộ là `acc chính` (duy nhất); script chỉ đọc tab này, không gộp tab lưu trữ hay tab con. Docs một tab vẫn hoạt động như cũ. Sau khi nâng cấp Code.gs, giữ nguyên trigger và token hiện có.
 Token GitHub quản trị phải có quyền Admin đối với `cotdostore/shopweb`.
 Phiên quản trị chỉ giữ trong bộ nhớ tab và hết hạn sau hai giờ.
 
