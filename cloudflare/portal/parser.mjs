@@ -15,11 +15,13 @@ export function parseCredentials(paragraphs) {
   const value=p.text.replace(/^(?:tk|tài khoản|tai khoan|email)\s*:\s*/i,'');
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)?[{i,value}]:[];
  });
- if(emails.length!==1) throw new Error('Cần đúng một dòng email tài khoản trong Docs.');
+ if(!emails.length) throw new Error('Không tìm thấy dòng email tài khoản trong Docs.');
  const email=emails[0];
- const password=rows.slice(email.i+1).find(p=>p.text)?.text.replace(/^(?:mk|mật khẩu|mat khau)\s*:\s*/i,'');
+ // Keep the first account's password and 2FA together; never borrow from the next account.
+ const accountRows=rows.slice(email.i+1,emails[1]?.i??rows.length);
+ const password=accountRows.find(p=>p.text)?.text.replace(/^(?:mk|mật khẩu|mat khau)\s*:\s*/i,'');
  if(!password||password.length>1000||/^(?:\(|lấy mã|lay ma|https?:|(?:link\s*)?2fa\s*:)/i.test(password)) throw new Error('Chưa xác định được dòng mật khẩu ngay sau email.');
- const candidates=rows.filter(p=>/xác minh|xac minh|2fa|bấm vào đây|bam vao day/i.test(p.text))
+ const candidates=accountRows.filter(p=>/xác minh|xac minh|2fa|bấm vào đây|bam vao day/i.test(p.text))
  .flatMap(p=>{
   const explicit=p.text.match(/^(?:link\s*)?(?:2fa|lấy mã(?:\s+xác minh)?|lay ma(?:\s+xac minh)?|xác minh|xac minh)\s*:\s*(https:\/\/\S+)$/i);
   return [...p.links.map(l=>safeUrl(l.url)),explicit?safeUrl(explicit[1]):null].filter(Boolean);

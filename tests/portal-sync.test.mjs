@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import {webcrypto} from 'node:crypto';
 import {handlePortal} from '../cloudflare/portal/index.mjs';
 import {digest} from '../cloudflare/portal/crypto.mjs';
-import {parseCredentials} from '../cloudflare/portal/parser.mjs';
+import {parseCredentials,fromGoogleDocument} from '../cloudflare/portal/parser.mjs';
 globalThis.crypto ??= webcrypto;
 
 test('Docs credentials accept labeled fields and preserve the original hyperlink format',()=>{
@@ -19,9 +19,17 @@ test('Docs credentials accept labeled fields and preserve the original hyperlink
 });
 test('Docs credentials reject ambiguous fields and unsafe verification links',()=>{
  assert.throws(()=>parseCredentials([{text:'Tk: fixture@example.test'},{text:'Link 2fa: https://example.test/verify'}]),/dòng mật khẩu/);
- assert.throws(()=>parseCredentials([{text:'Tk: first@example.test'},{text:'second@example.test'},{text:'Mk: fixture'}]),/đúng một dòng email/);
+ assert.throws(()=>parseCredentials([{text:'Tk: first@example.test'},{text:'second@example.test'},{text:'Mk: fixture'}]),/dòng mật khẩu/);
  assert.throws(()=>parseCredentials([{text:'Tk: fixture@example.test'},{text:'Mk: fixture'},{text:'Link 2fa: https://example.test/a'},{text:'2FA: https://example.test/b'}]),/đúng một link HTTPS/);
  assert.throws(()=>parseCredentials([{text:'Tk: fixture@example.test'},{text:'Mk: fixture'},{text:'Link 2fa: https://user:password@example.test/verify'}]),/đúng một link HTTPS/);
+});
+test('first account keeps its own password and 2FA, without borrowing later credentials',()=>{
+ const first=[{text:'Tk: first@example.test'},{text:'Mk: first-pass'},{text:'2FA: https://example.test/first'}];
+ const second=[{text:'Tk: second@example.test'},{text:'Mk: second-pass'},{text:'2FA: https://example.test/second'}];
+ assert.deepEqual(parseCredentials([...first,...second]),{username:'first@example.test',password:'first-pass',twoFactorUrl:'https://example.test/first'});
+ assert.throws(()=>parseCredentials([...first.slice(0,2),...second]),/link HTTPS/);
+ assert.throws(()=>parseCredentials([{text:'2FA: https://example.test/unrelated'},...first.slice(0,2),...second]),/link HTTPS/);
+ assert.throws(()=>parseCredentials([]),/Không tìm thấy/);
 });
 
 test('sync discovery requires a token and returns current active sources only',async()=>{
@@ -48,18 +56,26 @@ test('sync discovery requires a token and returns current active sources only',a
 });
 
 const script=await readFile(new URL('../portal-assets/Code.gs',import.meta.url),'utf8');
-test('Apps Script isolates the main credential tab from expired accounts, including nested tabs',()=>{
+test('Apps Script ranks account tabs, penalizes archives and resolves ties in document order',()=>{
  const context=vm.createContext({});vm.runInContext(script,context);
  const content=text=>[{paragraph:{elements:[{textRun:{content:text}}]}}];
- const live=content('live'),archive=content('expired');
+ const live=content('live@example.test'),archive=content('expired@example.test');
  const tab=(title,body,childTabs=[])=>({tabProperties:{title},documentTab:{body:{content:body}},childTabs});
  const select=doc=>context.portalSourceContent_(doc);
  assert.equal(select({body:{content:live}}),live);
  assert.equal(select({tabs:[tab('Tab 1',live)]}),live);
  assert.equal(select({tabs:[tab('acc hết hạn',archive),tab(' ACC CHÍNH ',live,[tab('old',archive)])]}),live);
- assert.equal(select({tabs:[tab('Archive',archive,[tab('acc chinh',live)])]}),live);
- assert.throws(()=>select({tabs:[tab('one',live),tab('two',archive)]}),/DOC_TAB_SELECTION/);
- assert.throws(()=>select({tabs:[tab('acc chính',live),tab('acc chinh',archive)]}),/DOC_TAB_SELECTION/);
+ assert.equal(select({tabs:[tab('one',live),tab('two',archive)]}),live);
+ assert.equal(select({tabs:[tab('acc chính',live),tab('acc chinh',archive)]}),live);
+ assert.equal(select({tabs:[tab('old',archive),tab('ĐANG DÙNG',live)]}),live);
+ assert.equal(select({tabs:[tab('acc chính',content('Instructions only')),tab('Tab 2',live)]}),live);
+ assert.equal(select({tabs:[tab('Archive',archive,[tab('acc chinh',archive)]),tab('Tab 2',live)]}),live);
+ assert.equal(select({tabs:[tab('Inactive',archive),tab('Active',live)]}),live);
+ const table=[{table:{tableRows:[{tableCells:[{content:live}]}]}}];
+ assert.equal(select({tabs:[tab('Help',content('Guide')),tab('Account',table)]}),table);
+ const accounts=content('first@example.test\n').concat(content('first-pass\n'),content('2FA: https://example.test/first\n'),content('second@example.test\n'),content('second-pass\n'),content('2FA: https://example.test/second\n'));
+ const chosen=select({tabs:[tab('expired',archive),tab('current',accounts)]});
+ assert.deepEqual(parseCredentials(fromGoogleDocument({body:{content:chosen}})),{username:'first@example.test',password:'first-pass',twoFactorUrl:'https://example.test/first'});
 });
 function harness(){
  let ids=['document_first'],read=[],sent=[],released=0,status=200;

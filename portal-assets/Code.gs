@@ -18,22 +18,33 @@ function portalConfig_() {
     throw new Error('Set PORTAL_SYNC_URL and PORTAL_SYNC_TOKEN in Script properties.');
   return {url: url, token: token};
 }
-// Never combine live credentials with an archived account in another tab.
+// Rank tabs by account content and title; ties keep document order.
 function portalSourceContent_(doc) {
   if (!doc.tabs || !doc.tabs.length) return (doc.body || {}).content;
-  const tabs = [];
-  function collect(items) {
-    (items || []).forEach(function(tab) { tabs.push(tab); collect(tab.childTabs); });
+  let best, bestScore = -Infinity;
+  function hasAccount(items) {
+    return (items || []).some(function(item) {
+      const text = ((item.paragraph || {}).elements || []).map(e => (e.textRun || {}).content || '').join('').trim()
+        .replace(/^(?:tk|tài khoản|tai khoan|email)\s*:\s*/i, '');
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text) || ((item.table || {}).tableRows || [])
+        .some(row => (row.tableCells || []).some(cell => hasAccount(cell.content)));
+    });
   }
-  collect(doc.tabs);
-  const main = tabs.filter(function(tab) {
-    const title = String((tab.tabProperties || {}).title || '').normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '').trim().toLowerCase().replace(/\s+/g, ' ');
-    return title === 'acc chinh';
-  });
-  if (main.length > 1 || (!main.length && tabs.length > 1))
-    throw new Error('DOC_TAB_SELECTION: Docs with multiple tabs must have exactly one tab named "acc chính".');
-  return (((main[0] || tabs[0]).documentTab || {}).body || {}).content;
+  function visit(items, archivedParent) {
+    (items || []).forEach(function(tab) {
+      const title = String((tab.tabProperties || {}).title || '').normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+      const archived = archivedParent || /\b(het han|expired|archive|archived|backup|old|cu|du phong|khong dung|inactive)\b/.test(title);
+      const primary = /\b(acc chinh|tai khoan chinh|main|primary)\b/.test(title);
+      const active = /\b(dang dung|dang hoat dong|active|current|moi)\b/.test(title);
+      const content = (((tab.documentTab || {}).body || {}).content || []);
+      const score = (hasAccount(content) ? 1000 : 0) + (archived ? -200 : primary ? 40 : active ? 30 : 0);
+      if (score > bestScore) { bestScore = score; best = content; }
+      visit(tab.childTabs, archived);
+    });
+  }
+  visit(doc.tabs, false);
+  return best;
 }
 function syncPortal() {
   const lock = LockService.getScriptLock();

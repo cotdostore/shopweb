@@ -35,8 +35,8 @@ Thêm, đổi hoặc tắt Docs ngay trên trang quản trị; không cần sử
 Google account chạy script vẫn cần quyền đọc từng Docs. Nếu Docs chưa được chia sẻ cho account đó, script không thể đọc.
 Nâng cấp bản cũ: triển khai backend mới trước, thay `Code.gs` trong dự án Apps Script hiện có. Giữ nguyên hai properties và trigger `syncPortal`; không cần cấp thêm scope.
 Chạy `installSync` một lần để đọc Docs mỗi 5 phút; trang khách kiểm tra lại mỗi 15 giây.
-Docs hỗ trợ mẫu cũ (email và mật khẩu ở hai dòng liên tiếp, hyperlink xác minh) hoặc nhãn `Tk:`, `Mk:`, `Link 2fa: https://…`. Mỗi Docs cần đúng một email và một link HTTPS 2FA.
-Nếu Docs có nhiều tab, đặt tên tab cần đồng bộ là `acc chính` (duy nhất); script chỉ đọc tab này, không gộp tab lưu trữ hay tab con. Docs một tab vẫn hoạt động như cũ. Sau khi nâng cấp Code.gs, giữ nguyên trigger và token hiện có.
+Docs hỗ trợ mẫu cũ (email và mật khẩu ở hai dòng liên tiếp, hyperlink xác minh) hoặc nhãn `Tk:`, `Mk:`, `Link 2fa: https://…`. Trong tab được chọn, lấy tài khoản đầu tiên; mật khẩu và link HTTPS 2FA phải nằm sau email đó và trước email tài khoản kế tiếp, không lấy chéo từ tài khoản khác.
+Nếu Docs có nhiều tab, ưu tiên tab chứa email tài khoản, rồi tên `acc chính`/`main`/`primary`, sau đó `đang dùng`/`active`/`current`. Hạ ưu tiên tab hết hạn, cũ, backup hoặc nằm trong tab lưu trữ. Cùng mức ưu tiên thì lấy tab đứng trước trong thứ tự tài liệu. Đây là suy đoán từ nội dung và tên tab, không kiểm tra tài khoản có đăng nhập được hay không. Docs một tab vẫn hoạt động như cũ. Sau khi nâng cấp Code.gs, giữ nguyên trigger và token hiện có.
 Token GitHub quản trị phải có quyền Admin đối với `cotdostore/shopweb`.
 Phiên quản trị chỉ giữ trong bộ nhớ tab và hết hạn sau hai giờ.
 
