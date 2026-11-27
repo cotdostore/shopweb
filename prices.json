@@ -49,7 +49,7 @@
         {
           "id": "netflix-premium-2-1",
           "term": "ADD FAMILY - 1 THÁNG",
-          "price": 79000,
+          "price": 69000,
           "oldPrice": null,
           "priceSuffix": "",
           "available": true
@@ -57,7 +57,7 @@
         {
           "id": "netflix-premium-2-2",
           "term": "EXTRA SLOT - 1 THÁNG",
-          "price": 89000,
+          "price": 79000,
           "oldPrice": null,
           "priceSuffix": "",
           "available": true
@@ -173,7 +173,7 @@
         {
           "id": "chatgpt-2-1",
           "term": "1 THÁNG PLUS",
-          "price": 250000,
+          "price": 189000,
           "oldPrice": 400000,
           "priceSuffix": "",
           "available": true
@@ -338,12 +338,12 @@
           "price": 15000,
           "oldPrice": 30000,
           "priceSuffix": "",
-          "available": true
+          "available": false
         },
         {
           "id": "capcut-pro-1-2",
           "term": "1 THÁNG",
-          "price": 39000,
+          "price": 45000,
           "oldPrice": 120000,
           "priceSuffix": "",
           "available": true
